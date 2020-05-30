@@ -5,9 +5,9 @@
     xlTables - Load/generate table data with Excel
     from python dictionary structures
 
-    cunningr@cisco.com - 2019
+    cunningr - 2020
 
-    Requires openpyxl >= 2.6.2
+    Requires openpyxl >= 2.6.2, jsonschema
 
 
 """
