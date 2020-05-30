@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Project Documentation">
+  <meta name="author" content="cunningr">
+  <link rel="shortcut icon" href="img/favicon.ico">
+  <title>Tables - Tables</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  <link href="extra.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Tables";
+    var mkdocs_page_input_path = "index.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="js/jquery-2.1.1.min.js" defer></script>
+  <script src="js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="." class="icon icon-home"> Tables</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href=".">Tables</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#introduction">Introduction</a></li>
+    
+
+    <li class="toctree-l2"><a href="#example-usage">Example Usage</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#data-ingestion">Data Ingestion</a></li>
+        
+            <li><a class="toctree-l3" href="#excel-table-schema">Excel Table Schema</a></li>
+        
+            <li><a class="toctree-l3" href="#excel-table-data">Excel Table Data</a></li>
+        
+            <li><a class="toctree-l3" href="#dump-to-excel">Dump to Excel</a></li>
+        
+        </ul>
+    
+
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="MKDocs/">MKDocs</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="modules/">Modules</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href=".">Tables</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Tables</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="introduction">Introduction</h1>
+<p>the <code>tables</code> module is intended to be consumed by other projects to prevent the need to keep rewriting data ingestion methods.  Pull Requests are welcome!</p>
+<h1 id="example-usage">Example Usage</h1>
+<h2 id="data-ingestion">Data Ingestion</h2>
+<p><code>tables</code> will search an Excel workbook for data defined as tables.  Do define a table in Excel so <code>Insert =&gt; Table</code>.  A table in Excel is essentially a named range of cells.  It is assumed that the first row of the table contains column headers which will be used as the keys for the data in the proceeding rows;</p>
+<p><img alt="Excel Table Name" src="media/excel_table_name.png" /></p>
+<p><img alt="Excel Table" src="media/excel_table.png" /></p>
+<p>Note that the table name in Excel is globally unique for that workbook.  The following code snippet will load a workbook called <code>example_parse_xlsx.xlsx</code> and dump the content out in YAML format.</p>
+<pre><code>import tables
+import yaml
+
+excel_tables_db = 'example_parse_xlsx.xlsx'
+excel_to_dict = tables.load_xl_db(excel_tables_db)
+print(yaml.dump(excel_to_dict))
+</code></pre>
+
+<h2 id="excel-table-schema">Excel Table Schema</h2>
+<p>JSON schema is a standards based way to describe the structure and validation constraints of your data.  Using JSON schema definition <code>tables</code> can auto-generate an Excel workbook containing tables representing your schema and leveraging some of Excels data validation features (E.g. <code>enum</code> for a list of possible values.</p>
+<p>Along with your schema you can also provide example rows of data to populate your table to guide your users.  When loading the example data, <code>tables</code> will also try to validate it against your schema and show warnings for any validation failures.  If no example data is provide <code>tables</code> will insert a single empty row with data validation in correct columns.</p>
+<p>Below is an example JSON schema used to define a table;</p>
+<pre><code>properties:
+  presence:
+    type: string
+    enum: ['present', 'absent']
+  type:
+    type: string
+    enum: ['area', 'building', 'floor']
+  name:
+    type: string
+  parentName:
+    type: string
+  latitude:
+    type: number
+  longitude:
+    type: number
+  street:
+    type: string
+  city:
+    type: string
+  country:
+    type: string
+  rfModel:
+    type: string
+    enum: ['Cubes And Walled Offices', 'Drywall Office Only', 'Indoor High Ceiling', 'Outdoor Open Space']
+</code></pre>
+
+<p>and here are some example rows of data;</p>
+<pre><code>sites:
+  - {'name': 'United States', 'parentName': 'Global', 'presence': 'present', 'type': a'}
+  - {'name': 'Texas', 'parentName': 'Global/United States', 'presence': 'present', e': 'area'}
+  - {'name': 'Richardson', 'parentName': 'Global/United States/Texas', 'presence': 'present', 'type': 'area'}
+</code></pre>
+
+<p>The following code will create a new workbook <code>text.xlsx</code> based on this schema and example input data;</p>
+<pre><code>import tables
+import yaml
+from openpyxl import Workbook
+
+wb = Workbook()
+ws = wb.active
+
+yaml_schema = &quot;&quot;&quot;
+module:
+  name: sites
+  methods:
+    - create
+    - delete
+    - delete_all
+  schemas:
+    sites:
+      properties:
+        presence:
+          type: string
+          enum: ['present', 'absent']
+        type:
+          type: string
+          enum:
+            - area
+            - building
+            - floor
+        name:
+          type: string
+        parentName:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        street:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        rfModel:
+          type: string
+          enum: [
+            'Cubes And Walled Offices',
+            'Drywall Office Only',
+            'Indoor High Ceiling',
+            'Outdoor Open Space'
+          ]
+  data:
+    sites:
+      - {&quot;presence&quot;: &quot;present&quot;, &quot;type&quot;: &quot;area&quot;, &quot;name&quot;: &quot;United States&quot;, &quot;parentName&quot;: &quot;Global&quot;, &quot;rfModel&quot;: &quot;Cubes And Walled Offices&quot;}
+      - {&quot;presence&quot;: &quot;present&quot;, &quot;type&quot;: &quot;area2&quot;, &quot;name&quot;: &quot;United States&quot;, &quot;parentName&quot;: &quot;Global&quot;, &quot;rfModel&quot;: &quot;Cubes And Walled Offices&quot;}
+      - {&quot;presence&quot;: &quot;present&quot;, &quot;type&quot;: &quot;area3&quot;, &quot;name&quot;: &quot;United States&quot;, &quot;parentName&quot;: &quot;Global&quot;, &quot;rfModel&quot;: &quot;Cubes And Walled Offices&quot;}
+&quot;&quot;&quot;
+
+dict_schema = yaml.load(yaml_schema, Loader=yaml.SafeLoader)
+
+name = '{}.{}.{}'.format('data', 'sites', 'sites')
+schema = dict_schema['module']['schemas']['sites']
+data = dict_schema['module']['data']['sites']
+
+
+tables.add_schema_table_to_worksheet(ws, name, schema, data=data, table_style='TableStyleMedium2')
+
+wb.save('test.xlsx')
+</code></pre>
+
+<p>Note that the above example data has schema validation errors to demonstrate the validation functionality.</p>
+<h2 id="excel-table-data">Excel Table Data</h2>
+<p>Similar to the above, we can use <code>tables</code> to simply create a table and populate with the provided rows of data.  The first row of the data should container an empty row with all the keys that should represent each column.</p>
+<pre><code>import tables
+from openpyxl import Workbook
+
+wb = Workbook()
+ws = wb.active
+
+name = &quot;sites&quot;
+data = [
+    {&quot;presence&quot;: &quot;present&quot;, &quot;type&quot;: &quot;area&quot;, &quot;name&quot;: &quot;United States&quot;, &quot;parentName&quot;: &quot;Global&quot;, &quot;rfModel&quot;: &quot;Cubes And Walled Offices&quot;},
+    {&quot;presence&quot;: &quot;present&quot;, &quot;type&quot;: &quot;area2&quot;, &quot;name&quot;: &quot;United States&quot;, &quot;parentName&quot;: &quot;Global&quot;, &quot;rfModel&quot;: &quot;Cubes And Walled Offices&quot;},
+    {&quot;presence&quot;: &quot;present&quot;, &quot;type&quot;: &quot;area3&quot;, &quot;name&quot;: &quot;United States&quot;, &quot;parentName&quot;: &quot;Global&quot;, &quot;rfModel&quot;: &quot;Cubes And Walled Offices&quot;}
+]
+
+headers = {
+    &quot;presence&quot;: &quot;&quot;,
+    &quot;type&quot;: &quot;&quot;,
+    &quot;name&quot;: &quot;&quot;,
+    &quot;parentName&quot;: &quot;&quot;,
+    &quot;latitude&quot;: &quot;&quot;,
+    &quot;longitude&quot;: &quot;&quot;,
+    &quot;street&quot;: &quot;&quot;,
+    &quot;city&quot;: &quot;&quot;,
+    &quot;country&quot;: &quot;&quot;,
+    &quot;rfModel&quot;: &quot;&quot;
+}
+data.insert(0, headers)
+
+tables.add_table_to_worksheet(ws, 'dataTable1', data, first_row_is_header=True, table_style='TableStyleMedium2')
+
+wb.save('test.xlsx')
+</code></pre>
+
+<p>See also <code>example_create_tables_from_schema</code></p>
+<h2 id="dump-to-excel">Dump to Excel</h2>
+<p>Uses the same format of structured data exported from "Data Ingestion" use case to create a complete Excel workbook.</p>
+<pre><code>import tables
+
+data = {
+    'MY_NEW_WS1': {
+        'my_new_table': [
+            {'Column1': 'data1', 'Column2': 'thing1', 'Column3': 'this1', 'Column4': 'that1', 'Column5': 'other1', 'Column6': None, 'Column7': None, 'Column8': None, 'Column9': None, 'Column10': None, 'Column11': None, 'Column12': None, 'Column13': None, 'Column14': None, 'Column15': None},
+            {'Column1': 'data2', 'Column2': 'thing2', 'Column3': 'this2', 'Column4': 'that2', 'Column5': 'other2', 'Column6': None, 'Column7': None, 'Column8': None, 'Column9': None, 'Column10': None, 'Column11': None, 'Column12': None, 'Column13': None, 'Column14': None, 'Column15': None},
+            {'Column1': 'data3', 'Column2': 'thing3', 'Column3': 'this3', 'Column4': 'that3', 'Column5': 'other3', 'Column6': None, 'Column7': None, 'Column8': None, 'Column9': None, 'Column10': None, 'Column11': None, 'Column12': None, 'Column13': None, 'Column14': None, 'Column15': None},
+            {'Column1': 'data4', 'Column2': 'thing4', 'Column3': 'this4', 'Column4': 'that4', 'Column5': 'other4', 'Column6': None, 'Column7': None, 'Column8': None, 'Column9': None, 'Column10': None, 'Column11': None, 'Column12': None, 'Column13': None, 'Column14': None, 'Column15': None}
+        ]
+    }
+}
+
+
+db_file_name = 'test_me.xlsx'
+tables.dump_db_to_xl(db_file_name, data, table_style='TableStyleMedium2', row_offset=1, col_offset=0)
+</code></pre>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="MKDocs/" class="btn btn-neutral float-right" title="MKDocs">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://wwwin-github.cisco.com/AS-Community/tables" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+      
+        <span style="margin-left: 15px"><a href="MKDocs/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '.';</script>
+    <script src="js/theme.js" defer></script>
+      <script src="search/main.js" defer></script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.0.4
+Build Date UTC : 2020-05-30 16:16:04
+-->
