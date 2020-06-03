@@ -302,6 +302,11 @@ def _add_column_data_validation(_work_sheet, headers, _schema, col_offset=0):
             _work_sheet.add_data_validation(_dv)
             _col = _get_cell_column_letter(idx + col_offset)
             dv_dict.update({_col: _dv})
+        elif 'boolean' in _schema['properties'][column]['type']:
+            _dv = _create_bool_dv(allow_blank=True)
+            _work_sheet.add_data_validation(_dv)
+            _col = _get_cell_column_letter(idx + col_offset)
+            dv_dict.update({_col: _dv})
 
     return dv_dict
 
@@ -372,6 +377,19 @@ def _create_tref_dv(_tref, allow_blank=True):
 
     # Stringify values and create data-validation object
     dv = DataValidation(type="list", formula1=_tref, allow_blank=allow_blank)
+
+    # Optionally set a custom error message
+    dv.error = 'Entry not in the list'
+    dv.errorTitle = 'Invalid Entry'
+
+    return dv
+
+
+def _create_bool_dv(allow_blank=True):
+
+    # Stringify values and create data-validation object
+    _values = '"{}"'.format(','.join(['TRUE', 'FALSE']))
+    dv = DataValidation(type="list", formula1=_values, allow_blank=allow_blank)
 
     # Optionally set a custom error message
     dv.error = 'Entry not in the list'
