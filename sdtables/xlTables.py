@@ -351,6 +351,7 @@ def _validate_data(_schema, _data):
             validate(instance=_row, schema=_schema)
         except Exception as e:
             has_error = True
+            print('ROW: {}'.format(_row))
             error = 'ERROR:', e
             print(error)
 
@@ -362,6 +363,8 @@ def _validate_data(_schema, _data):
 
 def _create_enum_dv(values, allow_blank=True):
 
+    # Remove 'null' values from JSON schema
+    values = [x for x in values if x is not None]
     # Stringify values and create data-validation object
     _values = '"{}"'.format(','.join(values))
     dv = DataValidation(type="list", formula1=_values, allow_blank=allow_blank)

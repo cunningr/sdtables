@@ -1,12 +1,14 @@
 # Introduction
 
-the ```tables``` module is intended to be consumed by other projects to prevent the need to keep rewriting data ingestion methods.  Pull Requests are welcome!
+The ```sdtables``` module is intended to be consumed by other projects to prevent the need to keep rewriting data ingestion methods.  Pull Requests are welcome!
+
+When working with APIs it can be useful to use Excel or HTML tables in Wikis to collect and store data with different schemas.  ```sdtables``` allows to define your schema using JSON schema and auto-build an Excel sheet the respective schema build as tables using some of Excels data validation features.  It also allows you to easily ingest data back into your scripts with minimal effort.
 
 # Example Usage
 
 ## Data Ingestion
 
-```tables``` will search an Excel workbook for data defined as tables.  Do define a table in Excel so ```Insert => Table```.  A table in Excel is essentially a named range of cells.  It is assumed that the first row of the table contains column headers which will be used as the keys for the data in the proceeding rows;
+```sdtables``` will search an Excel workbook for data defined as tables.  To define a table in Excel do ```Insert => Table```.  A table in Excel is essentially a named range of cells.  It is assumed that the first row of the table contains column headers which will be used as the keys for the data in the proceeding rows;
 
 ![Excel Table Name](./media/excel_table_name.png)
 
@@ -15,7 +17,7 @@ the ```tables``` module is intended to be consumed by other projects to prevent 
 Note that the table name in Excel is globally unique for that workbook.  The following code snippet will load a workbook called ```example_parse_xlsx.xlsx``` and dump the content out in YAML format.
 
 ```
-import tables
+import sdtables
 import yaml
 
 excel_tables_db = 'example_parse_xlsx.xlsx'
@@ -25,9 +27,9 @@ print(yaml.dump(excel_to_dict))
 
 ## Excel Table Schema
 
-JSON schema is a standards based way to describe the structure and validation constraints of your data.  Using JSON schema definition ```tables``` can auto-generate an Excel workbook containing tables representing your schema and leveraging some of Excels data validation features (E.g. ```enum``` for a list of possible values.
+JSON schema is a standards based way to describe the structure and validation constraints of your data.  Using JSON schema definition ```sdtables``` can auto-generate an Excel workbook containing tables representing your schema and leveraging some of Excels data validation features (E.g. ```enum``` for a list of possible values, ```boolean``` for ```TRUE``` and ```FLASE``` and even cross tables references using a custom extension ```tref```.
 
-Along with your schema you can also provide example rows of data to populate your table to guide your users.  When loading the example data, ```tables``` will also try to validate it against your schema and show warnings for any validation failures.  If no example data is provide ```tables``` will insert a single empty row with data validation in correct columns.
+Along with your schema you can also provide example rows of data to populate your table to guide your users.  When loading the example data, ```sdtables``` will also try to validate it against your schema and show warnings for any validation failures.  If no example data is provided ```sdtables``` will insert a single empty row with data validation in correct columns.
 
 Below is an example JSON schema used to define a table;
 
@@ -63,8 +65,8 @@ and here are some example rows of data;
 ```
 sites:
   - {'name': 'United States', 'parentName': 'Global', 'presence': 'present', 'type': a'}
-  - {'name': 'Texas', 'parentName': 'Global/United States', 'presence': 'present', e': 'area'}
-  - {'name': 'Richardson', 'parentName': 'Global/United States/Texas', 'presence': 'present', 'type': 'area'}
+  - {'name': 'New York', 'parentName': 'Global/United States', 'presence': 'present', 'type': 'area'}
+  - {'name': 'Empire State', 'parentName': 'Global/United States/New York', 'presence': 'present', 'type': 'area'}
 ```
 
 The following code will create a new workbook ```text.xlsx``` based on this schema and example input data;
@@ -139,9 +141,10 @@ wb.save('test.xlsx')
 
 Note that the above example data has schema validation errors to demonstrate the validation functionality.
 
+
 ## Excel Table Data
 
-Similar to the above, we can use ```tables``` to simply create a table and populate with the provided rows of data.  The first row of the data should container an empty row with all the keys that should represent each column.
+Similar to the above, we can use ```sdtables``` to simply create a table and populate with the provided rows of data.  The first row of the data should contain an empty row with all the keys that should represent each column.
 
 ```
 import tables
