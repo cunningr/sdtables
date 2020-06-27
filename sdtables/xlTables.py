@@ -51,7 +51,7 @@ def load_xl_db(db_file, flatten=False, squash=False, data_only=False, string_onl
     for sheet in sheets:
         sheet_name = wb[sheet].title
         workbook_dict.update({sheet_name: {}})
-        for table in wb[sheet]._tables:
+        for table in wb[sheet].tables.values():
 
             if flatten:
                 if squash:
