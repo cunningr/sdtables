@@ -21,7 +21,7 @@ import sdtables
 import yaml
 
 excel_tables_db = 'example_parse_xlsx.xlsx'
-excel_to_dict = tables.load_xl_db(excel_tables_db)
+excel_to_dict = sdtables.load_xl_db(excel_tables_db)
 print(yaml.dump(excel_to_dict))
 ```
 
