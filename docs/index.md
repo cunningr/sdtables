@@ -72,7 +72,7 @@ sites:
 The following code will create a new workbook ```text.xlsx``` based on this schema and example input data;
 
 ```
-import tables
+import sdtables
 import yaml
 from openpyxl import Workbook
 
@@ -134,7 +134,7 @@ schema = dict_schema['module']['schemas']['sites']
 data = dict_schema['module']['data']['sites']
 
 
-tables.add_schema_table_to_worksheet(ws, name, schema, data=data, table_style='TableStyleMedium2')
+sdtables.add_schema_table_to_worksheet(ws, name, schema, data=data, table_style='TableStyleMedium2')
 
 wb.save('test.xlsx')
 ```
@@ -147,7 +147,7 @@ Note that the above example data has schema validation errors to demonstrate the
 Similar to the above, we can use ```sdtables``` to simply create a table and populate with the provided rows of data.  The first row of the data should contain an empty row with all the keys that should represent each column.
 
 ```
-import tables
+import sdtables
 from openpyxl import Workbook
 
 wb = Workbook()
@@ -174,7 +174,7 @@ headers = {
 }
 data.insert(0, headers)
 
-tables.add_table_to_worksheet(ws, 'dataTable1', data, first_row_is_header=True, table_style='TableStyleMedium2')
+sdtables.add_table_to_worksheet(ws, 'dataTable1', data, first_row_is_header=True, table_style='TableStyleMedium2')
 
 wb.save('test.xlsx')
 ```
@@ -186,7 +186,7 @@ See also ```example_create_tables_from_schema```
 Uses the same format of structured data exported from "Data Ingestion" use case to create a complete Excel workbook.
 
 ```
-import tables
+import sdtables
 
 data = {
 	'MY_NEW_WS1': {
@@ -201,5 +201,5 @@ data = {
 
 
 db_file_name = 'test_me.xlsx'
-tables.dump_db_to_xl(db_file_name, data, table_style='TableStyleMedium2', row_offset=1, col_offset=0)
+sdtables.dump_db_to_xl(db_file_name, data, table_style='TableStyleMedium2', row_offset=1, col_offset=0)
 ```
