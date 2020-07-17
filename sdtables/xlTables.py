@@ -380,7 +380,7 @@ def _create_enum_dv(values, allow_blank=True):
     values = [x for x in values if x is not None]
     # Stringify values and create data-validation object
     _values = '"{}"'.format(','.join(values))
-    dv = DataValidation(type="list", formula1=_values, allow_blank=allow_blank)
+    dv = DataValidation(type="list", formula1=_values, allow_blank=allow_blank, errorStyle='warning')
 
     # Optionally set a custom error message
     dv.error = 'Entry not in the list'
@@ -392,7 +392,7 @@ def _create_enum_dv(values, allow_blank=True):
 def _create_tref_dv(_tref, allow_blank=True):
 
     # Stringify values and create data-validation object
-    dv = DataValidation(type="list", formula1=_tref, allow_blank=allow_blank)
+    dv = DataValidation(type="list", formula1=_tref, allow_blank=allow_blank, errorStyle='warning')
 
     # Optionally set a custom error message
     dv.error = 'Entry not in the list'
