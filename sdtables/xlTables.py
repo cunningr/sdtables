@@ -212,7 +212,7 @@ def add_schema_table_to_worksheet(_work_sheet, name, schema, data=None, table_st
         last_data_row = _add_table_data(_work_sheet, column_headers, data, schema=schema, dv_dict=dv_dict,
                                         col_offset=col_offset)
     else:
-        data = [{"fillRow": True}]
+        data = _fill_row_data(schema)
         last_data_row = _add_table_data(_work_sheet, column_headers, data, schema=schema, dv_dict=dv_dict,
                                         col_offset=col_offset)
 
@@ -341,6 +341,19 @@ def _add_table_data(_work_sheet, headers, data, schema=None, dv_dict=None, col_o
     _last_row_idx = _get_cell_coordinates(_end)[1]
 
     return _last_row_idx
+
+
+def _fill_row_data(_schema):
+    _fill_row = {}
+    if 'properties' in _schema.keys():
+        for key, value in _schema['properties'].items():
+            if 'default' in value.keys():
+                _fill_row.update({key: value['default']})
+
+    if(len(_fill_row.keys())) == 0:
+        _fill_row = {"fillRow": True}
+
+    return [_fill_row]
 
 
 def _validate_data(_schema, _data):
