@@ -231,6 +231,11 @@ def add_schema_table_to_worksheet(_work_sheet, name, schema, data=None, table_st
     return
 
 
+def validate_data(schema, data):
+
+    return _validate_data(schema, data)
+
+
 def _new_table_setup(_work_sheet, headers, descr=None, row_offset=0, col_offset=0):
 
     if descr is not None:
@@ -360,6 +365,8 @@ def _validate_data(_schema, _data):
 
     for _row in _data:
         has_error = False
+        # print(_row)
+        # print(_schema)
         try:
             validate(instance=_row, schema=_schema)
         except Exception as e:
@@ -370,8 +377,9 @@ def _validate_data(_schema, _data):
 
     if has_error:
         print("Table data has schema errors")
-
-    return False
+        return False
+    else:
+        return True
 
 
 def _create_enum_dv(values, allow_blank=True):
