@@ -362,24 +362,16 @@ def _fill_row_data(_schema):
 
 
 def _validate_data(_schema, _data):
-
-    for _row in _data:
-        has_error = False
-        # print(_row)
-        # print(_schema)
+    _results = {'result': 'OK', 'details': []}
+    for idx, _row in enumerate(_data):
         try:
             validate(instance=_row, schema=_schema)
+            _results['details'].append({'row': idx, 'data': _row, 'result': 'OK'})
         except Exception as e:
-            has_error = True
-            print('ROW: {}'.format(_row))
-            error = 'ERROR:', e
-            print(error)
+            _results['details'].append({'row': idx, 'data': _row, 'result': e})
+            _results['result'] = 'ERRORS'
 
-    if has_error:
-        print("Table data has schema errors")
-        return False
-    else:
-        return True
+    return _results
 
 
 def _create_enum_dv(values, allow_blank=True):
