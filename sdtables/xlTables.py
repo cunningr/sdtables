@@ -482,6 +482,13 @@ def _build_dict_from_table(_work_sheet, _table, name=None, string_only=False, fi
     return _new_dict
 
 
+def build_schema_from_row(row):
+    _schema = {}
+    for field in row.keys():
+        _schema.update({field: {'type': ['string', 'null']}})
+    return _schema
+
+
 if __name__ == "__main__":
     pass
 
