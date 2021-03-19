@@ -21,6 +21,63 @@ from openpyxl import Workbook
 from jsonschema import validate
 
 
+def build_dict_from_table(ws, table_name, fill_empty=False, string_only=False):
+    """
+    Takes an openpyxl table object and returns it as a dictionary
+
+    Args:
+        ws: Openpyxl worksheet object
+        table_name: Openpyxl table name
+
+    Returns:
+        A list of dictionaries (rows)
+
+    """
+
+    name = table_name
+    _table = ws.tables[table_name]
+
+    # Get the cell range of the table
+    _table_range = _table.ref
+
+    _keys = []
+
+    for _column in _table.tableColumns:
+        _keys.append(_column.name)
+
+    _num_columns = len(_keys)
+    _row_width = len(ws[_table_range][0])
+    if _num_columns != _row_width:
+        print('ERROR: Key count and row elements are not equal' + _num_columns, _row_width)
+
+    _new_dict = {name: {}}
+    _rows_list = []
+
+    for _row in ws[_table_range]:
+        _row_dict = {}
+        for _cell, _key in zip(_row, _keys):
+            if _cell.value == _key:
+                # Pass over headers where cell.value equal key
+                pass
+            else:
+                if fill_empty == True and _cell.value == None:
+                    _row_dict[_key] = ""
+                elif string_only == True:
+                    _row_dict[_key] = str(_cell.value).lstrip().rstrip()
+                else:
+                    _row_dict.update({_key:_cell.value})
+
+        if bool(_row_dict):
+            _rows_list.append(_row_dict)
+
+    _new_dict[name] = _rows_list
+
+    return _new_dict
+
+
+# Above this line has been reviewed
+
+
 def load_xl_db(db_file, flatten=False, squash=False, data_only=False, string_only=False, fill_empty=False):
     """
     Load Excel Database and convert tables to dictionary
@@ -208,7 +265,7 @@ def add_schema_table_to_worksheet(_work_sheet, name, schema, data=None, table_st
     dv_dict = _add_column_data_validation(_work_sheet, column_headers, schema, col_offset=col_offset)
 
     # Add rows to sheet with data validation
-    if data is not None:
+    if data is not None and len(data) > 0:
         last_data_row = _add_table_data(_work_sheet, column_headers, data, schema=schema, dv_dict=dv_dict,
                                         col_offset=col_offset)
     else:
@@ -244,7 +301,7 @@ def _new_table_setup(_work_sheet, headers, descr=None, row_offset=0, col_offset=
 
         _, _end_row = _get_end_of_data(_work_sheet)
         # Insert row_offset above table description
-        if row_offset is not 0:
+        if row_offset != 0:
             _work_sheet.insert_rows(_end_row, amount=row_offset)
 
         _end_col = len(headers) + col_offset
@@ -276,7 +333,7 @@ def _new_table_setup(_work_sheet, headers, descr=None, row_offset=0, col_offset=
         _comment = Comment(_description[2], "xlTables")
         _work_sheet[_cell].comment = _comment
 
-    if row_offset is not 0 and descr is None:
+    if row_offset != 0 and descr is None:
         _work_sheet.insert_rows(end_row, amount=row_offset)
 
     # Calculate end of worksheet, where the new table data will start
@@ -330,6 +387,9 @@ def _add_table_data(_work_sheet, headers, data, schema=None, dv_dict=None, col_o
             elif "fillRow" in row.keys():
                 _col = idx + col_offset
                 _add_row.update({_col: ''})
+            elif key not in row.keys() and headers[key].get('default'):
+                _col = idx + col_offset
+                _add_row.update({_col: headers[key].get('default')})
 
         _work_sheet.append(_add_row)
 
