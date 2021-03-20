@@ -48,7 +48,7 @@ def build_dict_from_table(ws, table_name, fill_empty=False, string_only=False):
     _num_columns = len(_keys)
     _row_width = len(ws[_table_range][0])
     if _num_columns != _row_width:
-        print('ERROR: Key count and row elements are not equal' + _num_columns, _row_width)
+        print('ERROR: Key count {} and row elements {} are not equal'.format(_num_columns, _row_width))
 
     _new_dict = {name: {}}
     _rows_list = []
@@ -74,6 +74,132 @@ def build_dict_from_table(ws, table_name, fill_empty=False, string_only=False):
 
     return _new_dict
 
+
+def delete_table(workbook, worksheet_name, table_name, row_offset=2, col_offset=1):
+    if not check_table_exists(workbook, worksheet_name, table_name):
+        print('ERROR: unable to delete table {}'.format(table_name))
+        return
+
+    _ws = workbook[worksheet_name]
+    _table_coordinates = _get_table_coordinates(_ws.tables[table_name].ref)
+    _num_rows = _table_coordinates["end_row"] - _table_coordinates["start_row"] + 1
+    _ws.delete_rows(_table_coordinates["start_row"] - row_offset, _num_rows + row_offset)
+    del _ws.tables[table_name]
+
+    return
+
+
+def update_table_data(workbook, worksheet_name, table_name, data, append=True):
+    if not check_table_exists(workbook, worksheet_name, table_name):
+        print('ERROR: unable to update table {}'.format(table_name))
+        return
+
+    _ws = workbook[worksheet_name]
+    _table_coordinates = _get_table_coordinates(_ws.tables[table_name].ref)
+    _header_row = _table_coordinates['start_row']
+    _last_row = _table_coordinates['end_row']
+    _next_row = _table_coordinates['end_row'] + 1
+    # Insert len(data) rows below the table
+    _ws.insert_rows(_next_row, len(data))
+
+    # Calculate end of new data and adjust table accordingly
+    _table_coordinates['end_row'] = _table_coordinates['end_row'] + len(data)
+    _table_ref = get_table_ref_from_coordinates(_table_coordinates)
+    _ws.tables[table_name].ref = '{}'.format(_table_ref)
+
+    # Insert new data based on current table columns as keys
+    headers = get_table_header_indexes(_ws.tables[table_name])
+    if append:
+        insert_indexed_rows_at_offset(_ws, headers, data, _last_row)
+    else:
+        insert_indexed_rows_at_offset(_ws, headers, data, _header_row)
+
+    # Nudge tables below the one being updates to account for inserted rows
+    nudge_table(_ws, _next_row, len(data))
+
+
+def check_table_exists(workbook, worksheet_name, table_name):
+    if worksheet_name not in workbook.sheetnames:
+        print('ERROR: worksheet with name {} not found'.format(worksheet_name))
+        return False
+    else:
+        _ws = workbook[worksheet_name]
+        if not _ws.tables.get(table_name):
+            print('ERROR: table with name {} not found in worksheet {}'.format(table_name, worksheet_name))
+            return False
+
+    return True
+
+
+def get_table_ref_from_coordinates(coordinates):
+    _start_col = _get_cell_column_letter(coordinates['start_col'])
+    _end_col = _get_cell_column_letter(coordinates['end_col'])
+    _start_row = coordinates['start_row']
+    _end_row = coordinates['end_row']
+    _table_ref = '{}{}:{}{}'.format(_start_col, _start_row, _end_col, _end_row)
+    return _table_ref
+
+
+def nudge_table(ws, from_row, nudge):
+    for table in ws.tables.values():
+        _table_coordinates = _get_table_coordinates(table.ref)
+
+        if _table_coordinates['start_row'] > from_row:
+            # Ensure table description cells are unmerged
+            merged_cells_coordinates = {
+                'start_col': _table_coordinates['start_col'],
+                'end_col': _table_coordinates['end_col'],
+                'start_row': _table_coordinates['start_row'] - 1,
+                'end_row': _table_coordinates['start_row'] - 1
+            }
+            ws.merged_cells.remove(get_table_ref_from_coordinates(merged_cells_coordinates))
+
+            # Nudge table start/end row numbers and set new table ref
+            _table_ref = get_table_ref_from_coordinates(_table_coordinates)
+            _table_coordinates['start_row'] = _table_coordinates['start_row'] + nudge
+            _table_coordinates['end_row'] = _table_coordinates['end_row'] + nudge
+            _table_ref = get_table_ref_from_coordinates(_table_coordinates)
+            table.ref = '{}'.format(_table_ref)
+
+            # Add back the merged cells for the table description
+            merged_cells_coordinates = {
+                'start_col': _table_coordinates['start_col'],
+                'end_col': _table_coordinates['end_col'],
+                'start_row': _table_coordinates['start_row'] - 1,
+                'end_row': _table_coordinates['start_row'] - 1
+            }
+            ws.merge_cells(get_table_ref_from_coordinates(merged_cells_coordinates))
+
+
+def get_table_header_indexes(table):
+    _headers = {}
+    for col in table.tableColumns:
+        _headers.update({col.name: col.id})
+    return _headers
+
+
+def insert_indexed_rows_at_offset(worksheet, headers, data, start_row):
+    # Overriding _current_row may produce bad side effects.  We need to set this back to the last row in the sheet
+    # Raised https://foss.heptapod.net/openpyxl/openpyxl/-/issues/1648 for enhancement
+    worksheet._current_row = start_row
+    for row in data:
+        _add_row = {}
+        # Build rows with column indexes
+        for key, idx in headers.items():
+            if key in row.keys():
+                _col = idx
+                _add_row.update({_col: row[key]})
+            elif "fillRow" in row.keys():
+                _col = idx
+                _add_row.update({_col: ''})
+            elif key not in row.keys() and headers[key].get('default'):
+                _col = idx
+                _add_row.update({_col: headers[key].get('default')})
+
+        worksheet.append(_add_row)
+
+    #  Put back previous hack
+    worksheet._current_row = worksheet.max_row
 
 # Above this line has been reviewed
 
@@ -380,6 +506,7 @@ def _add_table_data(_work_sheet, headers, data, schema=None, dv_dict=None, col_o
 
     for row in data:
         _add_row = {}
+        # Build rows with column indexes
         for idx, key in enumerate(headers, start=1):
             if key in row.keys():
                 _col = idx + col_offset
@@ -472,6 +599,19 @@ def _create_bool_dv(allow_blank=True):
     dv.errorTitle = 'Invalid Entry'
 
     return dv
+
+
+def _get_table_coordinates(table_ref):
+    _start, _end = table_ref.split(':')
+    _start_col, _start_row = _get_cell_coordinates(_start)
+    _end_col, _end_row = _get_cell_coordinates(_end)
+    _table_coordinates = {
+        "start_col": _start_col,
+        "end_col": _end_col,
+        "start_row": _start_row,
+        "end_row": _end_row
+    }
+    return _table_coordinates
 
 
 def _get_cell_coordinates(cell):
