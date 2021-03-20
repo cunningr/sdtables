@@ -21,6 +21,7 @@ from sdtables import xlTables
 class XlsxSchema:
     def __init__(self, wb=None):
         self.table_names = []
+        self.tables_dict = {}
         # self._tables = {}
         # self.schema_names = []
         # self.schemas = {}
@@ -33,7 +34,7 @@ class XlsxSchema:
             self.wb = Workbook()
             ws = self.wb.active
             self.wb.remove(ws)
-            self.sheetnames = self.wb.sheetnames
+            # self.sheetnames = self.wb.sheetnames
 
         self.workbook_dict = {}
         self.workbook_dict_flat = {}
@@ -51,31 +52,36 @@ class XlsxSchema:
         :return:
         """
         _table_names = []
-        _tables = {}
-        for sheet in self.sheetnames:
+        _tables_dict = {}
+        for sheet in self.wb.sheetnames:
             for table in self.wb[sheet].tables.values():
+                _tables_dict.update({table.name: sheet})
                 _table_names.append((sheet, table.name))
                 # _tables.update({table.name: table})
 
         self.table_names = _table_names
-        # self._tables = _tables
+        self.tables_dict = _tables_dict
 
-    def get_table_as_dict(self, worksheet_name, table_name):
+    def get_table_as_dict(self, table_name, fill_empty=False, string_only=False):
         """
         Takes a worksheet name and table name and returns the data as list of dictionaries
 
         Args:
             worksheet_name: Openpyxl worksheet name
             table_name: Openpyxl table name
+            fill_empty: By default and empty cell will have a value None.
+                    fill_empty will replace None with the empty string ""
+            string_only: Enforce that all cell values convert to strings
 
         Returns:
             A list of dictionaries (rows)
 
         """
+        worksheet_name = self.tables_dict[table_name]
         ws = self.wb[worksheet_name]
-        return xlTables.build_dict_from_table(ws, table_name)
+        return xlTables.build_dict_from_table(ws, table_name, fill_empty=fill_empty, string_only=string_only)
 
-    def get_all_tables_as_dict(self, flatten=False, squash=False):
+    def get_all_tables_as_dict(self, flatten=False, squash=False, fill_empty=False, string_only=False):
         """
         Returns all table data from the Openpyxl workbook object.  By default each table is nested in a dictionary
         using the worksheet names as keys E.g.
@@ -90,6 +96,9 @@ class XlsxSchema:
             flatten: Removes the worksheet_name hierarchy from the returned dictionary
             squash: Replaces the table_name with the worksheet_name.
                     Only one table per worksheet allowed and ignores additional tables
+            fill_empty: By default and empty cell will have a value None.
+                    fill_empty will replace None with the empty string ""
+            string_only: Enforce that all cell values convert to strings
 
         Returns:
             A list of dictionaries (rows)
@@ -100,8 +109,7 @@ class XlsxSchema:
         for table in self.table_names:
             worksheet_name, table_name = table
             ws = self.wb[worksheet_name]
-            table_dict = xlTables.build_dict_from_table(ws, table_name)
-            print(table_dict)
+            table_dict = xlTables.build_dict_from_table(ws, table_name, fill_empty=fill_empty, string_only=string_only)
 
             if flatten:
                 if squash:
@@ -126,15 +134,19 @@ class XlsxSchema:
         else:
             _ws = self.wb[worksheet_name]
 
-        schema = {table_name: {'properties': xlTables.build_schema_from_row(data[0])}}
-        xlTables.add_schema_table_to_worksheet(_ws, table_name, schema[table_name], data=data, table_style=table_style, row_offset=row_offset, col_offset=col_offset)
+        schema = {'properties': xlTables.build_schema_from_row(data[0])}
+        xlTables.add_schema_table_to_worksheet(_ws, table_name, schema, data=data, table_style=table_style, row_offset=row_offset, col_offset=col_offset)
         self._get_table_data()
-
         return
 
-    # Does not work
-    def update_table_data(self, worksheet_name, table_name, data, append=True):
-        xlTables.update_table_data(self.wb, worksheet_name, table_name, data, append=append)
+    def update_table_data(self, table_name, data, append=True, schema=None):
+        self._get_table_data()
+        if self.tables_dict.get(table_name):
+            worksheet_name = self.tables_dict.get(table_name)
+        else:
+            print('ERROR: table with name {} not found'.format(table_name))
+            return
+        xlTables.update_table_data(self.wb, worksheet_name, table_name, data, append=append, schema=schema)
         return
 
     def create_table_from_schema(self, table_name, schema, worksheet_name='default', data=None, table_style='TableStyleMedium2', row_offset=2, col_offset=1):
@@ -146,6 +158,13 @@ class XlsxSchema:
             _ws = self.wb[worksheet_name]
 
         return xlTables.add_schema_table_to_worksheet(_ws, table_name, schema, data=data, table_style=table_style, row_offset=row_offset, col_offset=col_offset)
+
+    def validate_table_data_with_schema(self, table_name, schema):
+        self._get_table_data()
+        ws = self.wb[self.tables_dict[table_name]]
+        data = xlTables.build_dict_from_table(ws, table_name, fill_empty=False, string_only=False)
+        result = xlTables.validate_data(schema, data[table_name])
+        return result
 
     def delete_table(self, worksheet_name, table_name, row_offset=2, col_offset=1):
         xlTables.delete_table(self.wb, worksheet_name, table_name, row_offset=row_offset, col_offset=col_offset)
