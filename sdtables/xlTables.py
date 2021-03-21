@@ -21,7 +21,7 @@ from openpyxl import Workbook
 from jsonschema import validate
 
 
-def add_schema_table_to_worksheet(_work_sheet, name, schema, data=None, table_style='TableStyleMedium2', row_offset=2, col_offset=1):
+def add_schema_table_to_worksheet(work_sheet, table_name, schema, data=None, table_style='TableStyleMedium2', row_offset=2, col_offset=1):
     """
     Add a list of dictionaries (rows) as an Excel table using a schema.
     The schema should define the column headers and any data validation lists (enum).
@@ -31,8 +31,8 @@ def add_schema_table_to_worksheet(_work_sheet, name, schema, data=None, table_st
     Row keys much match column headers defined in the schema
 
     Args:
-        _work_sheet: (object) An openpyxl ws object (this must be changes to ws name only)
-        name: (string) The name of the table.  Must be globally unique within the Excel workbook
+        work_sheet: (object) An openpyxl ws object (this must be changes to ws name only)
+        table_name: (string) The name of the table.  Must be globally unique within the Excel workbook
         data: (list) Table data as a list of dictionaries with each element constituting a row of the table
         schema: (dict) Dictionary representing a json schema (https://json-schema.org/).
         table_style: (string) An Excel table style
@@ -49,22 +49,21 @@ def add_schema_table_to_worksheet(_work_sheet, name, schema, data=None, table_st
         descr = None
 
     # Add new table headers at end of sheet
-    # column_headers = list(schema['properties'].keys())
     column_headers = schema['properties']
-    _start_table_data = _new_table_setup(_work_sheet, column_headers, descr=descr, row_offset=row_offset, col_offset=col_offset)
+    _start_table_data = _new_table_setup(work_sheet, column_headers, descr=descr, row_offset=row_offset, col_offset=col_offset)
     new_table_end_col = _start_table_data[0]
     new_table_start_row = _start_table_data[1]
 
     # Build data validation based on column ID
-    dv_dict = _add_column_data_validation(_work_sheet, column_headers, schema, col_offset=col_offset)
+    dv_dict = _add_column_data_validation(work_sheet, column_headers, schema, col_offset=col_offset)
 
     # Add rows to sheet with data validation
     if data is not None and len(data) > 0:
-        last_data_row = _add_table_data(_work_sheet, column_headers, data, schema=schema, dv_dict=dv_dict,
+        last_data_row = _add_table_data(work_sheet, column_headers, data, schema=schema, dv_dict=dv_dict,
                                         col_offset=col_offset)
     else:
         data = _fill_row_data(schema)
-        last_data_row = _add_table_data(_work_sheet, column_headers, data, schema=schema, dv_dict=dv_dict,
+        last_data_row = _add_table_data(work_sheet, column_headers, data, schema=schema, dv_dict=dv_dict,
                                         col_offset=col_offset)
 
     # Calculate new data refs and insert table
@@ -73,11 +72,11 @@ def add_schema_table_to_worksheet(_work_sheet, name, schema, data=None, table_st
     _scoord = '{}{}'.format(_t_scol, new_table_start_row)
     _ecoord = '{}{}'.format(_t_ecol, last_data_row)
     _t_ref = '{}:{}'.format(_scoord, _ecoord)
-    tab = Table(displayName=name, ref=_t_ref)
+    tab = Table(displayName=table_name, ref=_t_ref)
     style = TableStyleInfo(name=table_style, showFirstColumn=False,
                            showLastColumn=False, showRowStripes=True, showColumnStripes=False)
     tab.tableStyleInfo = style
-    _work_sheet.add_table(tab)
+    work_sheet.add_table(tab)
 
     return
 
@@ -97,35 +96,39 @@ def build_dict_from_table(ws, table_name, fill_empty=False, string_only=False):
         A list of dictionaries (rows)
 
     """
-    name = table_name
-    _table = ws.tables[table_name]
-
+    # name = table_name
     # Get the cell range of the table
+    _table = ws.tables[table_name]
     _table_range = _table.ref
 
+    # Get the column headers as keys to an (ordered) list
     _keys = []
-
     for _column in _table.tableColumns:
         _keys.append(_column.name)
 
     _num_columns = len(_keys)
     _row_width = len(ws[_table_range][0])
+    # Sanity check that row width == number of keys (column headers)
     if _num_columns != _row_width:
         print('ERROR: Key count {} and row elements {} are not equal'.format(_num_columns, _row_width))
 
-    _new_dict = {name: {}}
+    # Initialise the new table data dictionary and row list
+    _new_dict = {table_name: {}}
     _rows_list = []
 
+    # Iterate over each row ...
     for _row in ws[_table_range]:
         _row_dict = {}
+        # ... then each cell in the row zipped with keys list
         for _cell, _key in zip(_row, _keys):
             if _cell.value == _key:
-                # Pass over headers where cell.value equal key
+                # Ignore the header row where cell.value is equal to key
                 pass
             else:
-                if fill_empty == True and _cell.value == None:
+                # Carry out any required data formatting
+                if fill_empty == True and _cell.value is None:
                     _row_dict[_key] = ""
-                elif string_only == True:
+                elif string_only:
                     _row_dict[_key] = str(_cell.value).lstrip().rstrip()
                 else:
                     _row_dict.update({_key:_cell.value})
@@ -133,7 +136,7 @@ def build_dict_from_table(ws, table_name, fill_empty=False, string_only=False):
         if bool(_row_dict):
             _rows_list.append(_row_dict)
 
-    _new_dict[name] = _rows_list
+    _new_dict[table_name] = _rows_list
 
     return _new_dict
 
@@ -167,18 +170,18 @@ def update_table_data(workbook, worksheet_name, table_name, data, schema=None, a
 
     # Calculate end of new data and adjust table accordingly
     _table_coordinates['end_row'] = _table_coordinates['end_row'] + len(data)
-    _table_ref = get_table_ref_from_coordinates(_table_coordinates)
+    _table_ref = _get_table_ref_from_coordinates(_table_coordinates)
     _ws.tables[table_name].ref = '{}'.format(_table_ref)
 
     # Insert new data based on current table columns as keys
-    headers = get_table_header_indexes(_ws.tables[table_name])
+    headers = _get_table_header_indexes(_ws.tables[table_name])
     if append:
-        insert_indexed_rows_at_offset(_ws, headers, data, _last_row)
+        _insert_indexed_rows_at_offset(_ws, headers, data, _last_row)
     else:
-        insert_indexed_rows_at_offset(_ws, headers, data, _header_row)
+        _insert_indexed_rows_at_offset(_ws, headers, data, _header_row)
 
     # Nudge tables below the one being updates to account for inserted rows
-    nudge_table(_ws, _next_row, len(data))
+    _nudge_worksheet_tables(_ws, _next_row, len(data))
 
 
 def check_table_exists(workbook, worksheet_name, table_name):
@@ -194,16 +197,20 @@ def check_table_exists(workbook, worksheet_name, table_name):
     return True
 
 
-def get_table_ref_from_coordinates(coordinates):
-    _start_col = _get_cell_column_letter(coordinates['start_col'])
-    _end_col = _get_cell_column_letter(coordinates['end_col'])
-    _start_row = coordinates['start_row']
-    _end_row = coordinates['end_row']
-    _table_ref = '{}{}:{}{}'.format(_start_col, _start_row, _end_col, _end_row)
-    return _table_ref
+def validate_data(_schema, _data):
+    results = {'result': 'OK', 'details': []}
+    for idx, _row in enumerate(_data):
+        try:
+            validate(instance=_row, schema=_schema)
+            results['details'].append({'row': idx, 'data': _row, 'result': 'OK'})
+        except Exception as e:
+            results['details'].append({'row': idx, 'data': _row, 'result': e})
+            results['result'] = 'ERRORS'
+
+    return results
 
 
-def nudge_table(ws, from_row, nudge):
+def _nudge_worksheet_tables(ws, from_row, nudge):
     for table in ws.tables.values():
         _table_coordinates = _get_table_coordinates(table.ref)
 
@@ -215,13 +222,13 @@ def nudge_table(ws, from_row, nudge):
                 'start_row': _table_coordinates['start_row'] - 1,
                 'end_row': _table_coordinates['start_row'] - 1
             }
-            ws.merged_cells.remove(get_table_ref_from_coordinates(merged_cells_coordinates))
+            ws.merged_cells.remove(_get_table_ref_from_coordinates(merged_cells_coordinates))
 
             # Nudge table start/end row numbers and set new table ref
-            _table_ref = get_table_ref_from_coordinates(_table_coordinates)
+            _table_ref = _get_table_ref_from_coordinates(_table_coordinates)
             _table_coordinates['start_row'] = _table_coordinates['start_row'] + nudge
             _table_coordinates['end_row'] = _table_coordinates['end_row'] + nudge
-            _table_ref = get_table_ref_from_coordinates(_table_coordinates)
+            _table_ref = _get_table_ref_from_coordinates(_table_coordinates)
             table.ref = '{}'.format(_table_ref)
 
             # Add back the merged cells for the table description
@@ -231,17 +238,17 @@ def nudge_table(ws, from_row, nudge):
                 'start_row': _table_coordinates['start_row'] - 1,
                 'end_row': _table_coordinates['start_row'] - 1
             }
-            ws.merge_cells(get_table_ref_from_coordinates(merged_cells_coordinates))
+            ws.merge_cells(_get_table_ref_from_coordinates(merged_cells_coordinates))
 
 
-def get_table_header_indexes(table):
+def _get_table_header_indexes(table):
     _headers = {}
     for col in table.tableColumns:
         _headers.update({col.name: col.id})
     return _headers
 
 
-def insert_indexed_rows_at_offset(worksheet, headers, data, start_row):
+def _insert_indexed_rows_at_offset(worksheet, headers, data, start_row):
     # Overriding _current_row may produce bad side effects.  We need to set this back to the last row in the sheet
     # Raised https://foss.heptapod.net/openpyxl/openpyxl/-/issues/1648 for enhancement
     worksheet._current_row = start_row
@@ -265,82 +272,75 @@ def insert_indexed_rows_at_offset(worksheet, headers, data, start_row):
     worksheet._current_row = worksheet.max_row
 
 
-def build_schema_from_row(row):
+def _build_schema_from_row(row):
     _schema = {}
     for field in row.keys():
         _schema.update({field: {'type': ['string', 'null']}})
     return _schema
 
 
-def validate_data(_schema, _data):
-    results = {'result': 'OK', 'details': []}
-    for idx, _row in enumerate(_data):
-        try:
-            validate(instance=_row, schema=_schema)
-            results['details'].append({'row': idx, 'data': _row, 'result': 'OK'})
-        except Exception as e:
-            results['details'].append({'row': idx, 'data': _row, 'result': e})
-            results['result'] = 'ERRORS'
-
-    return results
-
-
-def _new_table_setup(_work_sheet, headers, descr=None, row_offset=0, col_offset=0):
+def _new_table_setup(work_sheet, headers, descr=None, row_offset=0, col_offset=0):
 
     if descr is not None:
+        # Append the description to the bottom of the worksheet
         _start_col = 1 + col_offset
-        _work_sheet.append({_start_col: descr})
+        work_sheet.append({_start_col: descr})
 
-        _, _end_row = _get_end_of_data(_work_sheet)
-        # Insert row_offset above table description
+        # Insert row_offset (table layout spacing) above table description
+        _last_col, _last_row = _get_end_of_data(work_sheet)
         if row_offset != 0:
-            _work_sheet.insert_rows(_end_row, amount=row_offset)
+            work_sheet.insert_rows(_last_row, amount=row_offset)
 
+        # Do cell merge for table description row
         _end_col = len(headers) + col_offset
-        _, _end_row = _get_end_of_data(_work_sheet)
-        _work_sheet.merge_cells(start_row=_end_row, start_column=_start_col, end_row=_end_row, end_column=_end_col)
-        _start_col_letter = _get_cell_column_letter(_start_col)
-        descr_coord = '{}{}'.format(_start_col_letter, _end_row)
-        _work_sheet[descr_coord].fill = PatternFill("solid", fgColor="ffff00")
+        _last_col, _last_row = _get_end_of_data(work_sheet)
+        work_sheet.merge_cells(start_row=_last_row, start_column=_start_col, end_row=_last_row, end_column=_end_col)
 
-    # Build the column headers with positional refs
+        # Colour the table description yellow #ffff00
+        description_coord = _get_cell_ref_from_coordinates((_start_col, _last_row))
+        work_sheet[description_coord].fill = PatternFill("solid", fgColor="ffff00")
+
+    # Build the column headers with positional refs and descriptions
     _add_headers = {}
     _add_descriptions = []
     for idx, header in enumerate(headers, start=1):
         _col = idx + col_offset
         _add_headers.update({_col: header})
-        # Test is the headers are a schema dict and check for a description key
-        if isinstance(headers[header], dict):
-            if 'description' in headers[header].keys():
-                _add_descriptions.append((header, _col, headers[header]['description']))
+        if headers[header].get('description'):
+            _add_descriptions.append((header, _col, headers[header]['description']))
 
-    # Add the headers
-    _work_sheet.append(_add_headers)
+    # Append the table headers to the bottom of the sheet
+    work_sheet.append(_add_headers)
 
-    end_col, end_row = _get_end_of_data(_work_sheet)
-    # Add any schema property descriptions as cell comments
+    # Add schema property field descriptions as cell comments in the header row
+    _last_col, _last_row = _get_end_of_data(work_sheet)
     for _description in _add_descriptions:
         _col = _get_cell_column_letter(_description[1])
-        _cell = '{}{}'.format(_col, end_row)
+        _cell = '{}{}'.format(_col, _last_row)
         _comment = Comment(_description[2], "xlTables")
-        _work_sheet[_cell].comment = _comment
+        work_sheet[_cell].comment = _comment
 
     if row_offset != 0 and descr is None:
-        _work_sheet.insert_rows(end_row, amount=row_offset)
+        work_sheet.insert_rows(_last_row, amount=row_offset)
 
     # Calculate end of worksheet, where the new table data will start
-    abs_end_col, end_row = _get_end_of_data(_work_sheet)
+    _last_col, _last_row = _get_end_of_data(work_sheet)
     end_col = len(headers) + col_offset
 
-    return end_col, end_row
+    return end_col, _last_row
 
 
-def _get_end_of_data(_work_sheet):
-    _current_dimensions = _work_sheet.calculate_dimension()
+def _get_end_of_data(work_sheet):
+    """
+    
+    :param work_sheet: 
+    :return: Tuple with coordinates of last (column, row) in sheet
+    """
+    _current_dimensions = work_sheet.calculate_dimension()
     _ref_start, _ref_end = _current_dimensions.split(':')
-    new_table_start = _get_cell_coordinates(_ref_end)
+    _worksheet_end = _get_cell_coordinates(_ref_end)
 
-    return new_table_start
+    return _worksheet_end
 
 
 def _add_column_data_validation(_work_sheet, headers, _schema, col_offset=0):
@@ -467,6 +467,15 @@ def _get_table_coordinates(table_ref):
     return _table_coordinates
 
 
+def _get_table_ref_from_coordinates(coordinates):
+    _start_col = _get_cell_column_letter(coordinates['start_col'])
+    _end_col = _get_cell_column_letter(coordinates['end_col'])
+    _start_row = coordinates['start_row']
+    _end_row = coordinates['end_row']
+    _table_ref = '{}{}:{}{}'.format(_start_col, _start_row, _end_col, _end_row)
+    return _table_ref
+
+
 def _get_cell_coordinates(cell):
     xy = openpyxl.utils.cell.coordinate_from_string(cell)
     col = openpyxl.utils.cell.column_index_from_string(xy[0])
@@ -476,9 +485,17 @@ def _get_cell_coordinates(cell):
 
 
 def _get_cell_column_letter(_col):
+    # Deprecate in favour of _get_cell_coordinates
     _letter = openpyxl.utils.cell.get_column_letter(_col)
 
     return _letter
+
+
+def _get_cell_ref_from_coordinates(cell_coordinates):
+    _col_letter = openpyxl.utils.cell.get_column_letter(cell_coordinates[0])
+    _cell_ref = '{}{}'.format(_col_letter, cell_coordinates[1])
+
+    return _cell_ref
 
 
 # Below this line will be deprecated

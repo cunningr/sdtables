@@ -134,7 +134,7 @@ class XlsxSchema:
         else:
             _ws = self.wb[worksheet_name]
 
-        schema = {'properties': xlTables.build_schema_from_row(data[0])}
+        schema = {'properties': xlTables._build_schema_from_row(data[0])}
         xlTables.add_schema_table_to_worksheet(_ws, table_name, schema, data=data, table_style=table_style, row_offset=row_offset, col_offset=col_offset)
         self._get_table_data()
         return
