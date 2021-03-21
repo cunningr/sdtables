@@ -18,7 +18,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.comments import Comment
 from openpyxl.styles import PatternFill
 from openpyxl import Workbook
-from jsonschema import validate
+from jsonschema import Draft7Validator, ValidationError, draft7_format_checker
 
 
 def add_schema_table_to_worksheet(work_sheet, table_name, schema, data=None, table_style='TableStyleMedium2', row_offset=2, col_offset=1):
@@ -196,10 +196,11 @@ def check_table_exists(workbook, worksheet_name, table_name):
 
 
 def validate_data(_schema, _data):
+    validator = Draft7Validator(_schema, format_checker=draft7_format_checker)
     results = {'result': 'OK', 'details': []}
     for idx, _row in enumerate(_data):
         try:
-            validate(instance=_row, schema=_schema)
+            validator.validate(instance=_row)
             results['details'].append({'row': idx, 'data': _row, 'result': 'OK'})
         except Exception as e:
             results['details'].append({'row': idx, 'data': _row, 'result': e})
