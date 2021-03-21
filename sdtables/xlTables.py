@@ -67,10 +67,8 @@ def add_schema_table_to_worksheet(work_sheet, table_name, schema, data=None, tab
                                         col_offset=col_offset)
 
     # Calculate new data refs and insert table
-    _t_scol = _get_cell_column_letter(1 + col_offset)
-    _t_ecol = _get_cell_column_letter(new_table_end_col)
-    _scoord = '{}{}'.format(_t_scol, new_table_start_row)
-    _ecoord = '{}{}'.format(_t_ecol, last_data_row)
+    _scoord = _get_cell_ref_from_coordinates((1 + col_offset, new_table_start_row))
+    _ecoord = _get_cell_ref_from_coordinates((new_table_end_col, last_data_row))
     _t_ref = '{}:{}'.format(_scoord, _ecoord)
     tab = Table(displayName=table_name, ref=_t_ref)
     style = TableStyleInfo(name=table_style, showFirstColumn=False,
@@ -315,8 +313,7 @@ def _new_table_setup(work_sheet, headers, descr=None, row_offset=0, col_offset=0
     # Add schema property field descriptions as cell comments in the header row
     _last_col, _last_row = _get_end_of_data(work_sheet)
     for _description in _add_descriptions:
-        _col = _get_cell_column_letter(_description[1])
-        _cell = '{}{}'.format(_col, _last_row)
+        _cell = _get_cell_ref_from_coordinates((_description[1], _last_row))
         _comment = Comment(_description[2], "xlTables")
         work_sheet[_cell].comment = _comment
 
@@ -349,17 +346,17 @@ def _add_column_data_validation(_work_sheet, headers, _schema, col_offset=0):
         if 'enum' in _schema['properties'][column].keys():
             _dv = _create_enum_dv(_schema['properties'][column]['enum'], allow_blank=True)
             _work_sheet.add_data_validation(_dv)
-            _col = _get_cell_column_letter(idx + col_offset)
+            _col = int(idx + col_offset)
             dv_dict.update({_col: _dv})
         elif 'tref' in _schema['properties'][column].keys():
             _dv = _create_tref_dv(_schema['properties'][column]['tref'], allow_blank=True)
             _work_sheet.add_data_validation(_dv)
-            _col = _get_cell_column_letter(idx + col_offset)
+            _col = int(idx + col_offset)
             dv_dict.update({_col: _dv})
         elif 'boolean' in _schema['properties'][column]['type']:
             _dv = _create_bool_dv(allow_blank=True)
             _work_sheet.add_data_validation(_dv)
-            _col = _get_cell_column_letter(idx + col_offset)
+            _col = int(idx + col_offset)
             dv_dict.update({_col: _dv})
 
     return dv_dict
@@ -392,6 +389,7 @@ def _add_table_data(_work_sheet, headers, data, schema=None, dv_dict=None, col_o
             _new_row_idx = _get_cell_coordinates(_end)[1]
             for col, dv in dv_dict.items():
                 cell = '{}{}'.format(col, _new_row_idx)
+                cell = _get_cell_ref_from_coordinates((col, _new_row_idx))
                 dv.add(cell)
 
     _current_dimensions = _work_sheet.calculate_dimension()
@@ -468,11 +466,9 @@ def _get_table_coordinates(table_ref):
 
 
 def _get_table_ref_from_coordinates(coordinates):
-    _start_col = _get_cell_column_letter(coordinates['start_col'])
-    _end_col = _get_cell_column_letter(coordinates['end_col'])
-    _start_row = coordinates['start_row']
-    _end_row = coordinates['end_row']
-    _table_ref = '{}{}:{}{}'.format(_start_col, _start_row, _end_col, _end_row)
+    _start_cell = _get_cell_ref_from_coordinates((coordinates['start_col'], coordinates['start_row']))
+    _end_cell = _get_cell_ref_from_coordinates((coordinates['end_col'], coordinates['end_row']))
+    _table_ref = '{}:{}'.format(_start_cell, _end_cell)
     return _table_ref
 
 
@@ -482,13 +478,6 @@ def _get_cell_coordinates(cell):
     row = xy[1]
 
     return col, row
-
-
-def _get_cell_column_letter(_col):
-    # Deprecate in favour of _get_cell_coordinates
-    _letter = openpyxl.utils.cell.get_column_letter(_col)
-
-    return _letter
 
 
 def _get_cell_ref_from_coordinates(cell_coordinates):
@@ -703,3 +692,9 @@ def _build_dict_from_table(_work_sheet, _table, name=None, string_only=False, fi
 
     return _new_dict
 
+
+def _get_cell_column_letter(_col):
+    # Deprecate in favour of _get_cell_coordinates
+    _letter = openpyxl.utils.cell.get_column_letter(_col)
+
+    return _letter

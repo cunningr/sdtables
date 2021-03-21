@@ -140,6 +140,7 @@ class XlsxSchema:
         return
 
     def update_table_data(self, table_name, data, append=True, schema=None):
+        print('WARNING: update data is experimental and is known to break data validation')
         self._get_table_data()
         if self.tables_dict.get(table_name):
             worksheet_name = self.tables_dict.get(table_name)
