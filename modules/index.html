@@ -7,14 +7,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <meta name="author" content="cunningr">
+  
   <link rel="shortcut icon" href="../img/favicon.ico">
   <title>Modules - sdtables</title>
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
-  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
-  <link href="../extra.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  <link href="../extra.css" rel="stylesheet" />
   
   <script>
     // Current page data
@@ -25,7 +26,7 @@
   
   <script src="../js/jquery-2.1.1.min.js" defer></script>
   <script src="../js/modernizr-2.8.3.min.js" defer></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
   <script>hljs.initHighlightingOnLoad();</script> 
   
 </head>
@@ -36,6 +37,7 @@
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
         <a href=".." class="icon icon-home"> sdtables</a>
         <div role="search">
@@ -46,40 +48,26 @@
       </div>
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-	<ul class="current">
-	  
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="..">sdtables</a>
-	    </li>
-          
-            <li class="toctree-l1 current">
-		
-    <a class="current" href="./">Modules</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l2"><a href="#sdtablesxltables">sdtables.xlTables</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l3" href="#load95xl95db">load_xl_db</a></li>
-        
-            <li><a class="toctree-l3" href="#dump95db95to95xl">dump_db_to_xl</a></li>
-        
-            <li><a class="toctree-l3" href="#add95table95to95worksheet">add_table_to_worksheet</a></li>
-        
-            <li><a class="toctree-l3" href="#add95schema95table95to95worksheet">add_schema_table_to_worksheet</a></li>
-        
-        </ul>
-    
-
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">sdtables</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Modules</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#load_xl_db">load_xl_db</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#dump_db_to_xl">dump_db_to_xl</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#add_table_to_worksheet">add_table_to_worksheet</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#add_schema_table_to_worksheet">add_schema_table_to_worksheet</a>
+    </li>
     </ul>
-	    </li>
-          
-        </ul>
+                    </li>
+                </ul>
       </div>
-      &nbsp;
+    </div>
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
@@ -107,6 +95,7 @@
       
     </li>
   </ul>
+  
   <hr/>
 </div>
           <div role="main">
@@ -119,10 +108,9 @@ from python dictionary structures</p>
 <p>cunningr - 2020</p>
 <p>Requires openpyxl &gt;= 2.6.2, jsonschema</p>
 <p><a name=".sdtables.xlTables.load_xl_db"></a></p>
-<h4 id="load95xl95db">load_xl_db</h4>
-<pre><code class="python">load_xl_db(db_file, flatten=False, squash=False, data_only=False, string_only=False, fill_empty=False)
+<h4 id="load_xl_db">load_xl_db</h4>
+<pre><code class="language-python">load_xl_db(db_file, flatten=False, squash=False, data_only=False, string_only=False, fill_empty=False)
 </code></pre>
-
 <p>Load Excel Database and convert tables to dictionary</p>
 <p><strong>Arguments</strong>:</p>
 <ul>
@@ -140,10 +128,9 @@ from python dictionary structures</p>
 <p><strong>Returns</strong>:</p>
 <p>The the full json object if found or 'None' is no object is found</p>
 <p><a name=".sdtables.xlTables.dump_db_to_xl"></a></p>
-<h4 id="dump95db95to95xl">dump_db_to_xl</h4>
-<pre><code class="python">dump_db_to_xl(db_file_name, data, expand=False, compress=False, first_row_is_header=True, table_style='TableStyleMedium2', row_offset=2, col_offset=1)
+<h4 id="dump_db_to_xl">dump_db_to_xl</h4>
+<pre><code class="language-python">dump_db_to_xl(db_file_name, data, expand=False, compress=False, first_row_is_header=True, table_style='TableStyleMedium2', row_offset=2, col_offset=1)
 </code></pre>
-
 <p>Add a list of dictionaries (rows) as an Excel table.  By default the first row is the header.
 The dictionaries are list of key:value pairs constituting each row of the table.</p>
 <p><strong>Arguments</strong>:</p>
@@ -161,10 +148,9 @@ The dictionaries are list of key:value pairs constituting each row of the table.
 <p><strong>Returns</strong>:</p>
 <p>Nothing</p>
 <p><a name=".sdtables.xlTables.add_table_to_worksheet"></a></p>
-<h4 id="add95table95to95worksheet">add_table_to_worksheet</h4>
-<pre><code class="python">add_table_to_worksheet(_work_sheet, name, data, first_row_is_header=True, table_style='TableStyleMedium2', row_offset=2, col_offset=1)
+<h4 id="add_table_to_worksheet">add_table_to_worksheet</h4>
+<pre><code class="language-python">add_table_to_worksheet(_work_sheet, name, data, first_row_is_header=True, table_style='TableStyleMedium2', row_offset=2, col_offset=1)
 </code></pre>
-
 <p>Add a list of dictionaries (rows) as an Excel table.  By default the first row is the header.
 The dictionaries are list of key:value pairs constituting each row of the table.</p>
 <p><strong>Arguments</strong>:</p>
@@ -180,10 +166,9 @@ The dictionaries are list of key:value pairs constituting each row of the table.
 <p><strong>Returns</strong>:</p>
 <p>Nothing</p>
 <p><a name=".sdtables.xlTables.add_schema_table_to_worksheet"></a></p>
-<h4 id="add95schema95table95to95worksheet">add_schema_table_to_worksheet</h4>
-<pre><code class="python">add_schema_table_to_worksheet(_work_sheet, name, schema, data=None, table_style='TableStyleMedium2', row_offset=2, col_offset=1)
+<h4 id="add_schema_table_to_worksheet">add_schema_table_to_worksheet</h4>
+<pre><code class="language-python">add_schema_table_to_worksheet(_work_sheet, name, schema, data=None, table_style='TableStyleMedium2', row_offset=2, col_offset=1)
 </code></pre>
-
 <p>Add a list of dictionaries (rows) as an Excel table using a schema.
 The schema should define the column headers and any data validation lists (enum).</p>
 <p>Rows of data (list) are passed separately (optional) and will be validated against the schema
@@ -221,7 +206,7 @@ Row keys much match column headers defined in the schema</p>
     
   </div>
 
-  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
       
         </div>
@@ -231,7 +216,7 @@ Row keys much match column headers defined in the schema</p>
 
   </div>
 
-  <div class="rst-versions" role="note" style="cursor: pointer">
+  <div class="rst-versions" role="note" aria-label="versions">
     <span class="rst-current-version" data-toggle="rst-current-version">
       
           <a href="https://github.com/cunningr/sdtables/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
@@ -245,6 +230,11 @@ Row keys much match column headers defined in the schema</p>
     <script>var base_url = '..';</script>
     <script src="../js/theme.js" defer></script>
       <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
 
 </body>
 </html>
