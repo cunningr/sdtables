@@ -16,13 +16,15 @@ import os
 import openpyxl
 from openpyxl import Workbook
 from sdtables import xlTables
+from tabulate import tabulate
 
 
-class XlsxSchema:
+class SdTables:
     def __init__(self, wb=None):
         self.sheetnames = []
         self.table_names = {}
         self.schemas = {}
+        self.validation_results = {}
 
         if wb is not None:
             self.load_xlsx_file(wb)
@@ -38,9 +40,9 @@ class XlsxSchema:
         """
         self.wb = openpyxl.load_workbook(filename=file, data_only=data_only)
         self.sheetnames = self.wb.sheetnames
-        self._get_table_data()
+        self._get_xl_table_data()
 
-    def _get_table_data(self):
+    def _get_xl_table_data(self):
         """
         Internal method used to index tables from openpyxl workbook object
         :return:
@@ -54,11 +56,10 @@ class XlsxSchema:
 
     def get_table_as_dict(self, table_name, fill_empty=False, string_only=False):
         """
-        Takes a worksheet name and table name and returns the data as list of dictionaries
+        Takes a table name and returns the data as list of dictionaries
 
         Args:
-            worksheet_name: Openpyxl worksheet name
-            table_name: Openpyxl table name
+            table_name: Name of the table name
             fill_empty: By default and empty cell will have a value None.
                     fill_empty will replace None with the empty string ""
             string_only: Enforce that all cell values convert to strings
@@ -74,8 +75,8 @@ class XlsxSchema:
 
     def get_all_tables_as_dict(self, flatten=False, squash=False, fill_empty=False, string_only=False):
         """
-        Returns all table data from the Openpyxl workbook object.  By default each table is nested in a dictionary
-        using the worksheet names as keys E.g.
+        Returns all table data.  When dealing with tables from xlsx, by default each table is nested in a dictionary
+        using the worksheet names as the key E.g.
 
         { "worksheet_name":
             [
@@ -84,12 +85,12 @@ class XlsxSchema:
         }
 
         Args:
-            flatten: Removes the worksheet_name hierarchy from the returned dictionary
-            squash: Replaces the table_name with the worksheet_name.
+            flatten: Removes the worksheet_name hierarchy from the returned dictionary when using xlxs as source
+            squash: Replaces the table_name with the worksheet_name when using xlsx as source.
                     Only one table per worksheet allowed and ignores additional tables
             fill_empty: By default and empty cell will have a value None.
                     fill_empty will replace None with the empty string ""
-            string_only: Enforce that all cell values convert to strings
+            string_only: Enforce that all cell values convert to strings (E.g. for xlsx formulae)
 
         Returns:
             A list of dictionaries (rows)
@@ -116,7 +117,7 @@ class XlsxSchema:
 
         return _dict
 
-    def create_table_from_data(self, table_name, data, worksheet_name='Sheet1', table_style='TableStyleMedium2', row_offset=2, col_offset=1):
+    def add_xlsx_table_from_data(self, table_name, data, worksheet_name='Sheet1', table_style='TableStyleMedium2', row_offset=2, col_offset=1):
         if type(table_name) is not str or type(data) is not list:
             print('ERROR: table name must be of type str and data of type list')
         if worksheet_name not in self.wb.sheetnames:
@@ -126,11 +127,11 @@ class XlsxSchema:
 
         schema = {'properties': xlTables._build_schema_from_row(data[0])}
         xlTables.add_schema_table_to_worksheet(_ws, table_name, schema, data=data, table_style=table_style, row_offset=row_offset, col_offset=col_offset)
-        self._get_table_data()
+        self._get_xl_table_data()
 
-    def update_table_data(self, table_name, data, append=True, schema=None):
+    def update_xlsx_table_data(self, table_name, data, append=True, schema=None):
         print('WARNING: update data is experimental and is known to break data validation')
-        self._get_table_data()
+        self._get_xl_table_data()
         if self.table_names.get(table_name):
             worksheet_name = self.table_names.get(table_name)
         else:
@@ -139,7 +140,7 @@ class XlsxSchema:
 
         xlTables.update_table_data(self.wb, worksheet_name, table_name, data, append=append, schema=schema)
 
-    def create_table_from_schema(self, table_name, schema, worksheet_name='default', data=None, table_style='TableStyleMedium2', row_offset=2, col_offset=1):
+    def add_xlsx_table_from_schema(self, table_name, schema, worksheet_name='default', data=None, table_style='TableStyleMedium2', row_offset=2, col_offset=1):
         if type(table_name) is not str or type(schema) is not dict:
             print('ERROR: table name must be of type str and schema of type dict')
 
@@ -152,29 +153,37 @@ class XlsxSchema:
 
         return xlTables.add_schema_table_to_worksheet(_ws, table_name, schema, data=data, table_style=table_style, row_offset=row_offset, col_offset=col_offset)
 
-    def validate_table_data_with_schema(self, table_name, schema):
-        self._get_table_data()
+    def validate_table_data_with_schema(self, table_name, schema, stdout=False):
+        self._get_xl_table_data()
         ws = self.wb[self.table_names[table_name]]
         data = xlTables.build_dict_from_table(ws, table_name, fill_empty=False, string_only=False)
-        result = xlTables.validate_data(schema, data[table_name])
 
-        return result
-
-    def validate_table_data(self):
-        self._get_table_data()
-
-        results = []
-        for table_name, worksheet_name in self.table_names.items():
-            if table_name in self.schemas.keys():
-                results.append({
-                    table_name: self.validate_table_data_with_schema(table_name, self.schemas[table_name])
-                })
-            else:
-                print('WARNING: No schema found for table {}'.format(table_name))
+        results = {'results.summary': {}, 'results.details': {}}
+        _validate_results = xlTables.validate_data(schema, data[table_name])
+        results['results.summary'] = {'table': table_name, 'result': _validate_results['result']}
+        results['results.details'] = {'table': table_name, 'result': _validate_results['details']}
 
         return results
 
-    def delete_table(self, worksheet_name, table_name, row_offset=2, col_offset=1):
+    def validate_table_data(self, stdout=False):
+        self._get_xl_table_data()
+
+        results = {'results.summary': [], 'results.details': []}
+        for table_name, worksheet_name in self.table_names.items():
+            if table_name in self.schemas.keys():
+                _validate_results = self.validate_table_data_with_schema(table_name, self.schemas[table_name])
+                results['results.summary'].append(_validate_results['results.summary'])
+                results['results.details'].append(_validate_results['results.details'])
+            else:
+                print('WARNING: No schema found for table {}'.format(table_name))
+
+        self.validation_results.update(results)
+        if stdout:
+            self.print_validation_results()
+
+        return results
+
+    def delete_xlsx_table(self, worksheet_name, table_name, row_offset=2, col_offset=1):
         xlTables.delete_table(self.wb, worksheet_name, table_name, row_offset=row_offset, col_offset=col_offset)
 
     def add_schema(self, schema_name, schema):
@@ -187,6 +196,14 @@ class XlsxSchema:
         xlsx_filename = '{}/{}.xlsx'.format(os.getcwd(), filename)
         self.wb.save(xlsx_filename)
 
+    def print_validation_results(self):
+        print('\nValidation Summary:\n')
+        print(tabulate(self.validation_results['results.summary'], headers='keys', tablefmt="grid"))
+
+        print('\nValidation Details:\n')
+        for table in self.validation_results['results.details']:
+            print('Table: {}'.format(table['table']))
+            print(tabulate(table['result'], headers='keys', tablefmt="grid"))
 
 # Retrieve a list of schema names under a given worksheet
 # list(filter(lambda item: "network_settings" in item.keys(), meme.schemanames))
