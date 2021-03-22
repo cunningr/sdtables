@@ -54,16 +54,6 @@
                 </ul>
                 <ul class="current">
                     <li class="toctree-l1 current"><a class="reference internal current" href="./">Modules</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#load_xl_db">load_xl_db</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dump_db_to_xl">dump_db_to_xl</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#add_table_to_worksheet">add_table_to_worksheet</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#add_schema_table_to_worksheet">add_schema_table_to_worksheet</a>
-    </li>
-    </ul>
                     </li>
                 </ul>
       </div>
@@ -101,91 +91,7 @@
           <div role="main">
             <div class="section">
               
-                <p><a name=".sdtables.xlTables"></a></p>
-<h2 id="sdtablesxltables">sdtables.xlTables</h2>
-<p>xlTables - Load/generate table data with Excel
-from python dictionary structures</p>
-<p>cunningr - 2020</p>
-<p>Requires openpyxl &gt;= 2.6.2, jsonschema</p>
-<p><a name=".sdtables.xlTables.load_xl_db"></a></p>
-<h4 id="load_xl_db">load_xl_db</h4>
-<pre><code class="language-python">load_xl_db(db_file, flatten=False, squash=False, data_only=False, string_only=False, fill_empty=False)
-</code></pre>
-<p>Load Excel Database and convert tables to dictionary</p>
-<p><strong>Arguments</strong>:</p>
-<ul>
-<li><code>db_file</code> - (string) An Excel file containing data defined in named tables</li>
-<li><code>flatten</code> - (bool) True or False (default).  Removes the Worksheet from the dictionary
-  and appends to the Worksheet name to table name for dictionary keys.</li>
-<li><code>squash</code> - (bool) True or False (default).  Assumes that all Worksheets contain only
-  one table and therefore uses the worksheet name as the returned
-  dictionary key. Only valid if flatten=True.</li>
-<li><code>data_only</code> - (bool) True or False (default). Controlls if cell data value is loaded or formula</li>
-<li><code>string_only</code> - (bool) True or False (default). Controlls if cell value is loaded as strings or
-  "native" variable type (str, int, long, etc.)</li>
-<li><code>fill_empty</code> - (bool) True or False (default). Controlls if empty cells are filled with ""</li>
-</ul>
-<p><strong>Returns</strong>:</p>
-<p>The the full json object if found or 'None' is no object is found</p>
-<p><a name=".sdtables.xlTables.dump_db_to_xl"></a></p>
-<h4 id="dump_db_to_xl">dump_db_to_xl</h4>
-<pre><code class="language-python">dump_db_to_xl(db_file_name, data, expand=False, compress=False, first_row_is_header=True, table_style='TableStyleMedium2', row_offset=2, col_offset=1)
-</code></pre>
-<p>Add a list of dictionaries (rows) as an Excel table.  By default the first row is the header.
-The dictionaries are list of key:value pairs constituting each row of the table.</p>
-<p><strong>Arguments</strong>:</p>
-<ul>
-<li><code>db_file_name</code> - (string) Name of Excel sheet to be created</li>
-<li><code>data</code> - (dict) Dictionary of tables where each key represents a table with a list of table rows</li>
-<li><code>expand</code> - (bool) Expands the tables one per worksheet</li>
-<li><code>compress</code> - (bool) Compresses all tables on to a single worksheet</li>
-<li><code>first_row_is_header</code> - (bool) True (default) or False. Currently ignored - first row must be 'stuffed'
-  to contain all keys for column headers.</li>
-<li><code>table_style</code> - (sting) An Excel table style</li>
-<li><code>row_offset</code> - (int) Integer to determine number of spacer rows to add</li>
-<li><code>col_offset</code> - (int) Integer to determine number of spacer columns to add</li>
-</ul>
-<p><strong>Returns</strong>:</p>
-<p>Nothing</p>
-<p><a name=".sdtables.xlTables.add_table_to_worksheet"></a></p>
-<h4 id="add_table_to_worksheet">add_table_to_worksheet</h4>
-<pre><code class="language-python">add_table_to_worksheet(_work_sheet, name, data, first_row_is_header=True, table_style='TableStyleMedium2', row_offset=2, col_offset=1)
-</code></pre>
-<p>Add a list of dictionaries (rows) as an Excel table.  By default the first row is the header.
-The dictionaries are list of key:value pairs constituting each row of the table.</p>
-<p><strong>Arguments</strong>:</p>
-<ul>
-<li><code>_work_sheet</code> - (object) An openpyxl ws object (this must be changes to ws name only)</li>
-<li><code>name</code> - (string) The name of the table.  Must be globally unique within the Excel workbook</li>
-<li><code>data</code> - (list) Table data as a list of dictionaries with each element constituting a row of the table</li>
-<li><code>first_row_is_header</code> - (bool) True (default) or False. Uses the first element of data as table headers</li>
-<li><code>table_style</code> - (sting) An Excel table style</li>
-<li><code>row_offset</code> - (int) Integer to determine number of spacer rows to add</li>
-<li><code>col_offset</code> - (int) Integer to determine number of spacer columns to add</li>
-</ul>
-<p><strong>Returns</strong>:</p>
-<p>Nothing</p>
-<p><a name=".sdtables.xlTables.add_schema_table_to_worksheet"></a></p>
-<h4 id="add_schema_table_to_worksheet">add_schema_table_to_worksheet</h4>
-<pre><code class="language-python">add_schema_table_to_worksheet(_work_sheet, name, schema, data=None, table_style='TableStyleMedium2', row_offset=2, col_offset=1)
-</code></pre>
-<p>Add a list of dictionaries (rows) as an Excel table using a schema.
-The schema should define the column headers and any data validation lists (enum).</p>
-<p>Rows of data (list) are passed separately (optional) and will be validated against the schema
-Rows are dictionaries with key:value pairs constituting each row of the table.
-Row keys much match column headers defined in the schema</p>
-<p><strong>Arguments</strong>:</p>
-<ul>
-<li><code>_work_sheet</code> - (object) An openpyxl ws object (this must be changes to ws name only)</li>
-<li><code>name</code> - (string) The name of the table.  Must be globally unique within the Excel workbook</li>
-<li><code>data</code> - (list) Table data as a list of dictionaries with each element constituting a row of the table</li>
-<li><code>schema</code> - (dict) Dictionary representing a json schema (https://json-schema.org/).</li>
-<li><code>table_style</code> - (string) An Excel table style</li>
-<li><code>row_offset</code> - (int) Integer to determine number of spacer rows to add</li>
-<li><code>col_offset</code> - (int) Integer to determine number of spacer columns to add</li>
-</ul>
-<p><strong>Returns</strong>:</p>
-<p>Nothing</p>
+                
               
             </div>
           </div>

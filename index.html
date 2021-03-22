@@ -99,14 +99,14 @@
 <h1 id="example-usage">Example Usage</h1>
 <h2 id="data-ingestion">Data Ingestion</h2>
 <p><code>sdtables</code> will search an Excel workbook for data defined as tables.  To define a table in Excel do <code>Insert =&gt; Table</code>.  A table in Excel is essentially a named range of cells.  It is assumed that the first row of the table contains column headers which will be used as the keys for the data in the proceeding rows;</p>
-<p><img alt="Excel Table Name" src="media/excel_table_name.png" /></p>
-<p><img alt="Excel Table" src="media/excel_table.png" /></p>
+<p><img alt="Excel Table Name" src="./media/excel_table_name.png" /></p>
+<p><img alt="Excel Table" src="./media/excel_table.png" /></p>
 <p>Note that the table name in Excel is globally unique for that workbook.  The following code snippet will load a workbook called <code>example_parse_xlsx.xlsx</code> and dump the content out in YAML format.</p>
 <pre><code>import sdtables
 import yaml
 
 excel_tables_db = 'example_parse_xlsx.xlsx'
-excel_to_dict = tables.load_xl_db(excel_tables_db)
+excel_to_dict = sdtables.load_xl_db(excel_tables_db)
 print(yaml.dump(excel_to_dict))
 </code></pre>
 <h2 id="excel-table-schema">Excel Table Schema</h2>
@@ -145,7 +145,7 @@ print(yaml.dump(excel_to_dict))
   - {'name': 'Empire State', 'parentName': 'Global/United States/New York', 'presence': 'present', 'type': 'area'}
 </code></pre>
 <p>The following code will create a new workbook <code>text.xlsx</code> based on this schema and example input data;</p>
-<pre><code>import tables
+<pre><code>import sdtables
 import yaml
 from openpyxl import Workbook
 
@@ -207,14 +207,14 @@ schema = dict_schema['module']['schemas']['sites']
 data = dict_schema['module']['data']['sites']
 
 
-tables.add_schema_table_to_worksheet(ws, name, schema, data=data, table_style='TableStyleMedium2')
+sdtables.add_schema_table_to_worksheet(ws, name, schema, data=data, table_style='TableStyleMedium2')
 
 wb.save('test.xlsx')
 </code></pre>
 <p>Note that the above example data has schema validation errors to demonstrate the validation functionality.</p>
 <h2 id="excel-table-data">Excel Table Data</h2>
 <p>Similar to the above, we can use <code>sdtables</code> to simply create a table and populate with the provided rows of data.  The first row of the data should contain an empty row with all the keys that should represent each column.</p>
-<pre><code>import tables
+<pre><code>import sdtables
 from openpyxl import Workbook
 
 wb = Workbook()
@@ -241,14 +241,14 @@ headers = {
 }
 data.insert(0, headers)
 
-tables.add_table_to_worksheet(ws, 'dataTable1', data, first_row_is_header=True, table_style='TableStyleMedium2')
+sdtables.add_table_to_worksheet(ws, 'dataTable1', data, first_row_is_header=True, table_style='TableStyleMedium2')
 
 wb.save('test.xlsx')
 </code></pre>
 <p>See also <code>example_create_tables_from_schema</code></p>
 <h2 id="dump-to-excel">Dump to Excel</h2>
 <p>Uses the same format of structured data exported from "Data Ingestion" use case to create a complete Excel workbook.</p>
-<pre><code>import tables
+<pre><code>import sdtables
 
 data = {
     'MY_NEW_WS1': {
@@ -263,7 +263,7 @@ data = {
 
 
 db_file_name = 'test_me.xlsx'
-tables.dump_db_to_xl(db_file_name, data, table_style='TableStyleMedium2', row_offset=1, col_offset=0)
+sdtables.dump_db_to_xl(db_file_name, data, table_style='TableStyleMedium2', row_offset=1, col_offset=0)
 </code></pre>
               
             </div>
@@ -320,5 +320,5 @@ tables.dump_db_to_xl(db_file_name, data, table_style='TableStyleMedium2', row_of
 
 <!--
 MkDocs version : 1.1.2
-Build Date UTC : 2021-03-22 11:10:39.079172+00:00
+Build Date UTC : 2021-03-22 11:13:30.478266+00:00
 -->
