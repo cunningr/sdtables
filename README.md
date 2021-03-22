@@ -22,7 +22,7 @@ Documentation can be [found here](https://cunningr.github.io/sdtables/)
 | | Load data to dict from Excel tables | Complete |
 | | Add data tables to excel using first row keys as headers | Complete |
 | | Add data tables to excel using a schema to define headers | Complete |
-| | Add Excel data validation to excel using a schema (enum|tref|default values) | Complete |
+| | Add Excel data validation to excel using a schema (enum\|tref\|default values) | Complete |
 | | Add schema with Excel data validation to excel without data | Complete |
 | | Update data in existing table | On Hold |
 | | Delete table | On Hold |
