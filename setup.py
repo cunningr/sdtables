@@ -11,7 +11,7 @@ setup(
   download_url='https://github.com/cunningr/sdtables/archive/1.0.0.zip',
   keywords=['Excel', 'tables', 'schema'],
   install_requires=[
-          'openpyxl==3.0.4',
+          'openpyxl==3.0.7',
           'jsonschema',
       ],
   classifiers=[
