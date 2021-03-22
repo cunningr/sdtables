@@ -153,7 +153,7 @@ class SdTables:
 
         return xlTables.add_schema_table_to_worksheet(_ws, table_name, schema, data=data, table_style=table_style, row_offset=row_offset, col_offset=col_offset)
 
-    def validate_table_data_with_schema(self, table_name, schema, stdout=False):
+    def validate_table_data_with_schema(self, table_name, schema):
         self._get_xl_table_data()
         ws = self.wb[self.table_names[table_name]]
         data = xlTables.build_dict_from_table(ws, table_name, fill_empty=False, string_only=False)
@@ -183,8 +183,12 @@ class SdTables:
 
         return results
 
-    def delete_xlsx_table(self, worksheet_name, table_name, row_offset=2, col_offset=1):
-        xlTables.delete_table(self.wb, worksheet_name, table_name, row_offset=row_offset, col_offset=col_offset)
+    def delete_xlsx_table(self, table_name, row_offset=2, col_offset=1):
+        self._get_xl_table_data()
+        if self.table_names.get(table_name):
+            worksheet_name = self.table_names[table_name]
+            xlTables.delete_table(self.wb, worksheet_name, table_name, row_offset=row_offset, col_offset=col_offset)
+            self.table_names.pop(table_name, None)
 
     def add_schema(self, schema_name, schema):
         self.schemas.update({schema_name: schema})
