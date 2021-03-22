@@ -1,5 +1,7 @@
 # sdtables
 
+WARNING: Version 2.0.0 introduces breaking changes.  If you depend on previous functions please pin your dependencies to 1.0.8 and plan to migrate to the new SdTables class.
+
 sdtables (schema defined tables) is a module providing convenient wrapper functions for working with and creating tabulated data from various sources including MS Excel.  We are using pythons jsonschema to build table structures and validate data
 
 Install with pip3:
