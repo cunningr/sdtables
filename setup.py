@@ -12,7 +12,7 @@ setup(
   keywords=['Excel', 'tables', 'schema'],
   install_requires=[
           'openpyxl==3.0.7',
-          'jsonschema',
+          'jsonschema==3.2.0',
       ],
   classifiers=[
     'Development Status :: 4 - Beta',

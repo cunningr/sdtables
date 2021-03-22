@@ -43,6 +43,7 @@ def add_schema_table_to_worksheet(work_sheet, table_name, schema, data=None, tab
         Nothing
 
     """
+    table_name = _make_table_name_safe(table_name)
     if 'description' in schema.keys():
         descr = schema['description']
     else:
@@ -699,3 +700,12 @@ def _get_cell_column_letter(_col):
     _letter = openpyxl.utils.cell.get_column_letter(_col)
 
     return _letter
+
+
+def _make_table_name_safe(table_name):
+    if '-' in table_name:
+        safe_table_name = table_name.replace('-', '_')
+    else:
+        safe_table_name = table_name
+
+    return safe_table_name
