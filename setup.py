@@ -1,8 +1,8 @@
 from distutils.core import setup
 setup(
   name='sdtables',
-  packages=['sdtables'],
-  version='2.0.0',
+  packages=['sdtables', 'sdtables_cli'],
+  version='2.0.1',
   license='MIT',
   description='sdtables (schema data tables) is a module providing convenient wrapper functions for working with tabulated from various sources including MS Excel',
   author='Richard Cunningham',
@@ -21,4 +21,9 @@ setup(
     'License :: OSI Approved :: MIT License',
     'Programming Language :: Python :: 3.6'
   ],
+  entry_points={
+    'console_scripts': [
+      'sdtables = sdtables_cli.cli:main'
+    ]
+  }
 )
