@@ -1,14 +1,16 @@
 # sdtables
 
-WARNING: Version 2.0.0 introduces breaking changes.  If you depend on previous functions please pin your dependencies to 1.0.8 and plan to migrate to the new SdTables class.
+WARNING: Version 2.0.0 introduces breaking changes.  If you depend on previous functions please pin your dependencies to 1.0.8 and plan to migrate to the new ```SdTables()``` class.
 
-sdtables (schema defined tables) is a module providing convenient wrapper functions for working with and creating tabulated data from various sources including MS Excel.  We are using pythons jsonschema to build table structures and validate data
+sdtables (schema defined tables) is a module providing convenient wrapper functions for working with and creating tabulated data from various sources including MS Excel.  We are using pythons jsonschema to build table structures and validate data.
 
 Install with pip3:
 
 ```
 pip3 install sdtables
 ```
+
+Check out the ```./examples``` for usage.
 
 TODO: Update docs
 Documentation can be [found here](https://cunningr.github.io/sdtables/)
@@ -30,13 +32,14 @@ Documentation can be [found here](https://cunningr.github.io/sdtables/)
 | | Can tref schema definition be improved? | New |
 | | Update docs | New |
 | | Create examples | Complete |
+| | Cli for convenient testing and common operations | New |
 
 Notes:
 
- * Update data in table -> file Issue
+ * Update data in table -> create new git Issue
   * Without schema there is no data validation.  Can this be enhanced?
   * This breaks data validation since this is not moved when rows are inserted
- * Delete table -> file Issue
+ * Delete table -> create new git Issue
     This is broken as we don't remove the data or other formatting
  * Validate table data against schema (add to docs)
   * We are using [draft7_format_checker](https://python-jsonschema.readthedocs.io/en/latest/validate/#validating-formats) which means we can check common formats such as ipv4 and regex
