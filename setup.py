@@ -8,7 +8,7 @@ setup(
   author='Richard Cunningham',
   author_email='cunningr@gmail.com',
   url='https://github.com/cunningr/sdtables',
-  download_url='https://github.com/cunningr/sdtables/archive/1.0.0.zip',
+  download_url='https://github.com/cunningr/sdtables/archive/2.0.1.zip',
   keywords=['Excel', 'tables', 'schema'],
   install_requires=[
           'openpyxl==3.0.7',
