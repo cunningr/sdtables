@@ -10,3 +10,8 @@ properties:
     type: string
   Type:
     type: string
+seed:
+  - {'Make': 'Fiat', 'Model': 'Panda', 'Colour': 'Light Blue', 'Type': 'Car'}
+  - {'Make': 'Citroen', 'Model': 'AX', 'Colour': 'Grey', 'Type': 'Car'}
+  - {'Make': 'Honda', 'Model': 'MT5', 'Colour': 'Blue', 'Type': 'Bike'}
+  - {'Make': 'Yamaha', 'Model': 'TZR', 'Colour': 'Black', 'Type': 'Bike'}

@@ -28,5 +28,35 @@
         "Date of Birth": {
             "type": "string"
         }
-    }
+    },
+    "seed": [
+            {
+                "Name": "Bat",
+                "Surname": "Man",
+                "Age": 34,
+                "Gender": "M",
+                "Date of Birth": "1954-04-04T00:00:00"
+            },
+            {
+                "Name": "Super",
+                "Surname": "Man",
+                "Age": 32,
+                "Gender": "M",
+                "Date of Birth": "1954-04-05T00:00:00"
+            },
+            {
+                "Name": "Wonder",
+                "Surname": "Woman",
+                "Age": 26,
+                "Gender": "F",
+                "Date of Birth": "1954-04-06T00:00:00"
+            },
+            {
+                "Name": "Super",
+                "Surname": "Woman",
+                "Age": 38,
+                "Gender": "F",
+                "Date of Birth": "1954-04-07T00:00:00"
+            }
+    ]
 }
