@@ -1,3 +1,4 @@
+worksheet: "all_tables"
 description: "Table of vehicles"
 properties:
   Make:

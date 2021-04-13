@@ -7,7 +7,7 @@ import sdtables_cli.common as common
 logger = logging.getLogger('main.{}'.format(__name__))
 
 
-class Validate:
+class Build:
     def __init__(self, args):
         # Run setup tasks
         self.args = args
@@ -20,8 +20,10 @@ class Validate:
     def add_args(_key, _subparsers):
         _args = _subparsers.add_parser(_key, help='use sdtables display -h for help')
         _args.add_argument('--schema', required=True, help='Path to schema file(s).  Can be <file> or <dir>')
-        _args.add_argument('--input', required=True, help='Path to .xlsx file as input')
+        _args.add_argument('--output', required=True, help='Path to output .xlsx file')
         _args.add_argument('--format', default='yaml', help='Schema file format (json|yaml) (default=yaml)')
+        _args.add_argument('--noseed', action='store_true', help='Exclude seed data if present in schema file')
+        _args.add_argument('--filename-as-sheet', action='store_true', help='Use the schema filename as the xlsx sheetname')
         return _args
 
     def run(self):
@@ -37,12 +39,22 @@ class Validate:
                 self.schema.update(self._load_schema_from_file(_file_path))
 
         tables = SdTables()
-        tables.load_xlsx_file(self.args.input)
-        for _name, schema in self.schema.items():
-            tables.add_schema(_name, schema)
 
-        tables.validate_table_data(stdout=True)
-        # print(json.dumps(self.schema, indent=4))
+        for _name, schema in self.schema.items():
+            if self.args.noseed:
+                data = None
+            else:
+                data = schema.get('seed', None)
+
+            if self.args.filename_as_sheet:
+                worksheet_name = schema.get('file', None)
+            else:
+                worksheet_name = schema.get('worksheet', 'main')
+
+            tables.add_xlsx_table_from_schema(_name, schema, data=data, worksheet_name=worksheet_name)
+
+        # Save the xlsx workbook
+        tables.save_xlsx(self.args.output)
 
     def _load_schema_from_file(self, path):
         with open(path, 'r') as file:

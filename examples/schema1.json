@@ -1,6 +1,6 @@
 {
     "name": "super.heroes",
-    "description": "Defines agents",
+    "description": "Defines some super heroes",
     "properties": {
         "Name": {
             "type": "string",
