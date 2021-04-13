@@ -1,4 +1,3 @@
-name: "vehicles"
 description: "Table of vehicles"
 properties:
   Make:

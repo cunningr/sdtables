@@ -33,12 +33,12 @@ class Display:
                     yaml.dump(_tables, file)
             else:
                 print(yaml.dump(_tables))
-        if self.args.format == 'json':
+        elif self.args.format == 'json':
             if self.args.output:
                 with open(self.args.output, 'w') as file:
                     json.dump(_tables, file, indent=4, default=str)
             else:
-                print(yaml.dump(_tables))
+                print(json.dumps(_tables, indent=4, default=str))
         else:
             for _sheetname, _tables in _tables.items():
                 if self.args.output:

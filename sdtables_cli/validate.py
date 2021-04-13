@@ -56,8 +56,8 @@ class Validate:
 
         if _dict.get('name'):
             _schema_name = _dict['name']
+            return {_dict['name']: _dict}
         else:
-            _schema_name, _ = file.split('.', 2)
-
-        return {_dict['name']: _dict}
+            _schema_name, _ = path.split('/')[-1].split('.')
+            return {_schema_name: _dict}
 
