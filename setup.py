@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
   name='sdtables',
   packages=['sdtables', 'sdtables_cli'],
-  version='2.0.1',
+  version='2.0.2',
   license='MIT',
   description='sdtables (schema data tables) is a module providing convenient wrapper functions for working with tabulated from various sources including MS Excel',
   author='Richard Cunningham',

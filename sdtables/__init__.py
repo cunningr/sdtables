@@ -14,6 +14,6 @@
 
 """
 
-__version__ = "1.0.8"
+__version__ = "2.0.2"
 
 from sdtables.xlTables import *
