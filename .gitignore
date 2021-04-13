@@ -1,6 +1,9 @@
 # Pycharms guff
 .idea/
 
+# Don't save .xlsx files
+.xlsx
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
