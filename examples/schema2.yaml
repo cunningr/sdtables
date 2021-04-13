@@ -1,0 +1,13 @@
+name: "vehicles"
+description: "Table of vehicles"
+properties:
+  Make:
+    type: string
+    description: 'Vehicle manufacturer'
+  Model:
+    type: string
+    description: 'Vehicle model'
+  Colour:
+    type: string
+  Type:
+    type: string

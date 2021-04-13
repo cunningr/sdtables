@@ -19,6 +19,7 @@ from openpyxl.comments import Comment
 from openpyxl.styles import PatternFill
 from openpyxl import Workbook
 from jsonschema import Draft7Validator, ValidationError, draft7_format_checker
+import datetime
 
 
 def add_schema_table_to_worksheet(work_sheet, table_name, schema, data=None, table_style='TableStyleMedium2', row_offset=2, col_offset=1):
@@ -200,6 +201,8 @@ def validate_data(_schema, _data):
     validator = Draft7Validator(_schema, format_checker=draft7_format_checker)
     results = {'result': 'OK', 'details': []}
     for idx, _row in enumerate(_data):
+        # Currently required to convert datetime.datetime to json compliant time string
+        clean_special_formats(_row)
         try:
             validator.validate(instance=_row)
             results['details'].append({'row': idx, 'data': _row, 'result': 'OK'})
@@ -208,6 +211,14 @@ def validate_data(_schema, _data):
             results['result'] = 'ERRORS'
 
     return results
+
+
+def clean_special_formats(_row):
+    for _key, _val in _row.items():
+        if isinstance(_val, datetime.datetime):
+            _row[_key] = _val.strftime("%Y-%m-%dT%H:%M:%S")
+
+    return
 
 
 def _nudge_worksheet_tables(ws, from_row, nudge):

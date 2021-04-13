@@ -175,7 +175,7 @@ class SdTables:
                 results['results.summary'].append(_validate_results['results.summary'])
                 results['results.details'].append(_validate_results['results.details'])
             else:
-                print('WARNING: No schema found for table {}'.format(table_name))
+                print('WARNING: No schema found for table: "{}"'.format(table_name))
 
         self.validation_results.update(results)
         if stdout:
