@@ -2,6 +2,7 @@ import logging
 from sdtables.sdtables import SdTables
 from tabulate import tabulate
 import yaml, json
+import os
 import sdtables_cli.common as common
 
 logger = logging.getLogger('main.{}'.format(__name__))
@@ -20,6 +21,7 @@ class Display:
         _args = _subparsers.add_parser(_key, help='use sdtables display -h for help')
         _args.add_argument('--format', default='grid', help='(yaml|json|Pythons tabulate module output format (default=grid))')
         _args.add_argument('--output', help='Output file name (default=stdout)')
+        _args.add_argument('--split-output', nargs='?', const=".", help='Write output to multiple files based on schema')
         _args.add_argument('--input', required=True, help='Path to .xlsx file as input')
         return _args
 
@@ -31,12 +33,28 @@ class Display:
             if self.args.output:
                 with open(self.args.output, 'w') as file:
                     yaml.dump(_tables, file)
+            elif self.args.split_output is not None:
+                _dir = './{}'.format(self.args.split_output)
+                os.makedirs(_dir, exist_ok=True)
+                for _sheet, _tables_ in _tables.items():
+                    for _name, _table in _tables_.items():
+                        _path = '{}/{}.yaml'.format(_dir, _name)
+                        with open(_path, 'w') as file:
+                            yaml.dump(_table, file)
             else:
                 print(yaml.dump(_tables))
         elif self.args.format == 'json':
             if self.args.output:
                 with open(self.args.output, 'w') as file:
                     json.dump(_tables, file, indent=4, default=str)
+            elif self.args.split_output is not None:
+                _dir = './{}'.format(self.args.split_output)
+                os.makedirs(_dir, exist_ok=True)
+                for _sheet, _tables_ in _tables.items():
+                    for _name, _table in _tables_.items():
+                        _path = '{}/{}.json'.format(_dir, _name)
+                        with open(_path, 'w') as file:
+                            json.dump(_table, file, indent=4, default=str)
             else:
                 print(json.dumps(_tables, indent=4, default=str))
         else:
